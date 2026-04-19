@@ -2,8 +2,11 @@
 using ConvenienceStore.Models.HangSo;
 using ConvenienceStore.Web.Services;
 using ConvenienceStore.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 using System.Text.Encodings.Web;
 
 namespace ConvenienceStore.Web.Controllers
@@ -25,12 +28,14 @@ namespace ConvenienceStore.Web.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult DangKy()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> DangKy(DangKyViewModel model)
         {
             if (!ModelState.IsValid)
@@ -62,6 +67,7 @@ namespace ConvenienceStore.Web.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult DangNhap(string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
@@ -69,6 +75,7 @@ namespace ConvenienceStore.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> DangNhap(DangNhapViewModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
@@ -96,9 +103,6 @@ namespace ConvenienceStore.Web.Controllers
 
             ModelState.AddModelError("", "Email hoặc mật khẩu không đúng");
             return View(model);
-
-            ModelState.AddModelError("", "Email hoặc mật khẩu không đúng");
-            return View(model);
         }
 
         [HttpPost]
@@ -109,12 +113,14 @@ namespace ConvenienceStore.Web.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult QuenMatKhau()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> QuenMatKhau(QuenMatKhauViewModel model)
         {
             if (!ModelState.IsValid)
@@ -128,30 +134,43 @@ namespace ConvenienceStore.Web.Controllers
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(nguoiDung);
+            var tokenMaHoa = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
             var linkDatLaiMatKhau = Url.Action(
                 nameof(DatLaiMatKhau),
                 "TaiKhoan",
-                new { token, email = nguoiDung.Email },
+                new { token = tokenMaHoa, email = nguoiDung.Email },
                 Request.Scheme);
 
             var noiDung = $@"
                 <h3>Đặt lại mật khẩu</h3>
-                <p>Bạn hãy bấm vào liên kết bên dưới để đặt lại mật khẩu:</p>
-                <p><a href='{HtmlEncoder.Default.Encode(linkDatLaiMatKhau)}'>Đặt lại mật khẩu</a></p>";
+                <p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản Convenience Store.</p>
+                <p>Vui lòng bấm vào liên kết bên dưới để đặt lại mật khẩu:</p>
+                <p>
+                    <a href='{HtmlEncoder.Default.Encode(linkDatLaiMatKhau!)}'>
+                        Đặt lại mật khẩu
+                    </a>
+                </p>
+                <p>Nếu không bấm được, hãy copy link này vào trình duyệt:</p>
+                <p>{HtmlEncoder.Default.Encode(linkDatLaiMatKhau!)}</p>";
 
-            await _dichVuEmail.GuiEmailAsync(nguoiDung.Email!, "Đặt lại mật khẩu", noiDung);
+            await _dichVuEmail.GuiEmailAsync(
+                nguoiDung.Email!,
+                "Đặt lại mật khẩu",
+                noiDung);
 
             return RedirectToAction(nameof(XacNhanGuiEmail));
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult XacNhanGuiEmail()
         {
             return View();
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult DatLaiMatKhau(string token, string email)
         {
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
@@ -167,6 +186,7 @@ namespace ConvenienceStore.Web.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> DatLaiMatKhau(DatLaiMatKhauViewModel model)
         {
             if (!ModelState.IsValid)
@@ -180,7 +200,23 @@ namespace ConvenienceStore.Web.Controllers
                 return View(model);
             }
 
-            var ketQua = await _userManager.ResetPasswordAsync(nguoiDung, model.Token, model.MatKhauMoi);
+            string tokenGoc;
+
+            try
+            {
+                tokenGoc = Encoding.UTF8.GetString(
+                    WebEncoders.Base64UrlDecode(model.Token));
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Liên kết đặt lại mật khẩu không hợp lệ.");
+                return View(model);
+            }
+
+            var ketQua = await _userManager.ResetPasswordAsync(
+                nguoiDung,
+                tokenGoc,
+                model.MatKhauMoi);
 
             if (ketQua.Succeeded)
             {
@@ -196,6 +232,7 @@ namespace ConvenienceStore.Web.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult XacNhanDatLaiMatKhau()
         {
             return View();

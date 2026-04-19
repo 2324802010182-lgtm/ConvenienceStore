@@ -1,43 +1,39 @@
-﻿using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
+﻿using System.Net;
+using System.Net.Mail;
+
+using ConvenienceStore.Web.ViewModels;
+using Microsoft.Extensions.Options;
 
 namespace ConvenienceStore.Web.Services
 {
     public class DichVuEmail : IDichVuEmail
     {
-        private readonly IConfiguration _configuration;
+        private readonly EmailSettings _emailSettings;
 
-        public DichVuEmail(IConfiguration configuration)
+        public DichVuEmail(IOptions<EmailSettings> emailSettings)
         {
-            _configuration = configuration;
+            _emailSettings = emailSettings.Value;
         }
 
         public async Task GuiEmailAsync(string emailNhan, string tieuDe, string noiDungHtml)
         {
-            var emailGui = _configuration["EmailSettings:Email"];
-            var tenHienThi = _configuration["EmailSettings:DisplayName"];
-            var matKhau = _configuration["EmailSettings:Password"];
-            var host = _configuration["EmailSettings:Host"];
-            var port = int.Parse(_configuration["EmailSettings:Port"]);
-
-            var tinNhan = new MimeMessage();
-            tinNhan.From.Add(new MailboxAddress(tenHienThi, emailGui));
-            tinNhan.To.Add(MailboxAddress.Parse(emailNhan));
-            tinNhan.Subject = tieuDe;
-
-            var bodyBuilder = new BodyBuilder
+            using var mailMessage = new MailMessage
             {
-                HtmlBody = noiDungHtml
+                From = new MailAddress(_emailSettings.Email, _emailSettings.DisplayName),
+                Subject = tieuDe,
+                Body = noiDungHtml,
+                IsBodyHtml = true
             };
 
-            tinNhan.Body = bodyBuilder.ToMessageBody();
+            mailMessage.To.Add(emailNhan);
 
-            using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(emailGui, matKhau);
-            await smtp.SendAsync(tinNhan);
-            await smtp.DisconnectAsync(true);
+            using var smtpClient = new SmtpClient(_emailSettings.Host, _emailSettings.Port)
+            {
+                Credentials = new NetworkCredential(_emailSettings.Email, _emailSettings.Password),
+                EnableSsl = true
+            };
+
+            await smtpClient.SendMailAsync(mailMessage);
         }
     }
 }

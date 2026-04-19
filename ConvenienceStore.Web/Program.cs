@@ -6,6 +6,7 @@ using ConvenienceStore.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ConvenienceStore.Web.Services;
+using ConvenienceStore.Web.ViewModels;
 using ConvenienceStore.Web.DuLieuKhoiTao;
 using ConvenienceStore.Business.Interfaces;
 using ConvenienceStore.Business.Services;
@@ -42,6 +43,10 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<IDonViCongViec, DonViCongViec>();
 builder.Services.AddScoped<IDichVuDanhMuc, DichVuDanhMuc>();
 builder.Services.AddScoped<IDichVuSanPham, DichVuSanPham>();
+builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+
 builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IDichVuDashboardAdmin, DichVuDashboardAdmin>();

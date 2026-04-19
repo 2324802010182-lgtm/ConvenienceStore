@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/quanlytaikhoan.css" asp-append-version="true" />
 </head>
 <body>
     <header class="top-header">
@@ -40,9 +41,11 @@
 
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                <a href="/DonHangCuaToi" class="account-btn" title="Đơn hàng của tôi">
-                    <i class="fa-solid fa-bag-shopping"></i>
+                <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="account-btn" title="Tài khoản của tôi">
+                    <i class="fa-regular fa-user"></i>
                 </a>
+
+          
 
                 @if (User.IsInRole(VaiTro.Admin))
                 {

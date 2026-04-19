@@ -4,8 +4,8 @@ namespace ConvenienceStore.Web.ViewModels
 {
     public class QuenMatKhauViewModel
     {
-        [Required(ErrorMessage = "Email khong duoc de trong")]
-        [EmailAddress(ErrorMessage = "Email khong hop le")]
-        public string Email { get; set; }
+        [Required(ErrorMessage = "Vui lòng nhập email")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        public string Email { get; set; } = string.Empty;
     }
 }

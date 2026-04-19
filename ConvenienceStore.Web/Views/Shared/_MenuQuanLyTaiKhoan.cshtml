@@ -1,0 +1,47 @@
+﻿@{
+    var menu = ViewBag.MenuHienTai as string ?? "";
+}
+
+<div class="account-sidebar" width ="500px">
+    <div class="account-sidebar-top">
+        <div class="account-avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="account-user-name">@User.Identity?.Name</div>
+        <div class="account-user-email">Tài khoản của bạn</div>
+    </div>
+
+    <div class="account-menu">
+        <a asp-controller="QuanLyTaiKhoan" asp-action="Index"
+           class="account-menu-item @(menu == "TongQuan" ? "active" : "")">
+            <i class="fa-solid fa-house"></i>
+            <span>Tổng quan</span>
+        </a>
+
+        <a asp-controller="QuanLyTaiKhoan" asp-action="HoSo"
+           class="account-menu-item @(menu == "HoSo" ? "active" : "")">
+            <i class="fa-solid fa-user-pen"></i>
+            <span>Hồ sơ</span>
+        </a>
+
+        <a asp-controller="QuanLyTaiKhoan" asp-action="DonHang"
+           class="account-menu-item @(menu == "DonHang" ? "active" : "")">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <span>Đơn hàng</span>
+        </a>
+
+        <a asp-controller="QuanLyTaiKhoan" asp-action="DoiMatKhau"
+           class="account-menu-item @(menu == "DoiMatKhau" ? "active" : "")">
+            <i class="fa-solid fa-key"></i>
+            <span>Đổi mật khẩu</span>
+        </a>
+
+        <form asp-controller="QuanLyTaiKhoan" asp-action="DangXuat" method="post" class="m-0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="account-menu-item account-menu-btn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Đăng xuất</span>
+            </button>
+        </form>
+    </div>
+</div>
