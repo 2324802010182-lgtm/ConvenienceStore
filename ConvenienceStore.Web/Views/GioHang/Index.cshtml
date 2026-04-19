@@ -1,0 +1,75 @@
+﻿@model List<ConvenienceStore.Web.ViewModels.GioHangItemViewModel>
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    var tongTien = Model.Sum(x => x.ThanhTien);
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h2>Giỏ hàng của bạn</h2>
+        <p class="text-muted">Kiểm tra sản phẩm trước khi đặt hàng</p>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="admin-table-card">
+            <table class="table admin-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Tồn kho</th>
+                        <th>Thành tiền</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="@item.HinhAnh" alt="@item.TenSanPham" style="width:70px;height:70px;object-fit:cover;border-radius:10px;" />
+                                    <span>@item.TenSanPham</span>
+                                </div>
+                            </td>
+                            <td>@item.Gia.ToString("N0") đ</td>
+                            <td>
+                                <form asp-action="CapNhatSoLuong" method="post" class="d-flex gap-2 align-items-center">
+                                    <input type="hidden" name="sanPhamId" value="@item.SanPhamId" />
+                                    <input type="number" name="soLuong" value="@item.SoLuong" min="0" max="@item.SoLuongTon" class="form-control" style="width:90px;" />
+                                    <button type="submit" class="btn admin-primary-btn btn-sm">Cập nhật</button>
+                                </form>
+                            </td>
+                            <td>@item.SoLuongTon</td>
+                            <td>@item.ThanhTien.ToString("N0") đ</td>
+                            <td class="text-center">
+                                <form asp-action="XoaKhoiGio" method="post" class="d-inline">
+                                    <input type="hidden" name="sanPhamId" value="@item.SanPhamId" />
+                                    <button type="submit" class="btn admin-danger-btn btn-sm">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="admin-form-card mt-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h4 class="mb-0">Tổng tiền: <span style="color:#198754;">@tongTien.ToString("N0") đ</span></h4>
+                <a asp-action="DatHangTuGio" class="btn auth-btn">Tiến hành đặt hàng</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="admin-form-card text-center">
+            <h4>Giỏ hàng đang trống</h4>
+            <p class="text-muted">Bạn chưa thêm sản phẩm nào vào giỏ.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn auth-btn">Tiếp tục mua sắm</a>
+        </div>
+    }
+</div>

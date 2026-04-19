@@ -1,0 +1,184 @@
+﻿@model ConvenienceStore.Web.ViewModels.TrangChuViewModel
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="home-layout">
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="~/images/logo-big.png" alt="Logo cửa hàng" />
+        </div>
+
+        <div class="sidebar-title">DANH MỤC SẢN PHẨM</div>
+
+        <ul class="category-menu">
+            @foreach (var danhMuc in Model.DanhSachDanhMuc)
+            {
+                <li>
+                    <a asp-controller="SanPhamKhach" asp-action="TheoDanhMuc" asp-route-id="@danhMuc.Id" class="category-link">
+                        @danhMuc.TenDanhMuc
+                    </a>
+                </li>
+            }
+        </ul>
+    </aside>
+
+    <section class="main-content">
+        <div id="bannerChinh" class="carousel slide main-banner-carousel" data-bs-ride="carousel" data-bs-interval="3000">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="~/images/banner-1.jpg" class="d-block w-100" alt="Khuyến mãi đồ uống" />
+                </div>
+                <div class="carousel-item">
+                    <img src="~/images/banner-2.jpg" class="d-block w-100" alt="Chương trình quà tặng" />
+                </div>
+            </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#bannerChinh" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+
+            <button class="carousel-control-next" type="button" data-bs-target="#bannerChinh" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+
+        <section class="home-section flash-sale-section">
+            <div class="section-heading-row">
+                <div>
+                    <h3 class="section-title flash-sale-title">⚡ Flash Sale</h3>
+                    <p class="flash-sale-subtitle mb-0">Sản phẩm đang giảm giá cực hấp dẫn</p>
+                </div>
+            </div>
+
+            @if (Model.DanhSachFlashSale.Any())
+            {
+                <div class="product-row">
+                    @foreach (var item in Model.DanhSachFlashSale)
+                    {
+                        var duongDanAnh = "/images/no-image.png";
+
+                        if (!string.IsNullOrWhiteSpace(item.HinhAnh))
+                        {
+                            if (item.HinhAnh.StartsWith("http://") || item.HinhAnh.StartsWith("https://"))
+                            {
+                                duongDanAnh = item.HinhAnh;
+                            }
+                            else if (item.HinhAnh.StartsWith("/images/"))
+                            {
+                                duongDanAnh = item.HinhAnh;
+                            }
+                            else
+                            {
+                                duongDanAnh = "/images/" + item.HinhAnh;
+                            }
+                        }
+
+                        <div class="product-card flash-sale-card">
+                            <div class="flash-sale-badge">-@item.PhanTramGiam%</div>
+
+                            <div class="product-image">
+                                <a asp-controller="SanPhamKhach" asp-action="ChiTiet" asp-route-id="@item.Id">
+                                    <img src="@duongDanAnh" alt="@item.TenSanPham" />
+                                </a>
+                            </div>
+
+                            <div class="product-body">
+                                <div class="product-name">@item.TenSanPham</div>
+
+                                <div class="price-wrap flex-column align-items-start">
+                                    <span class="flash-sale-price">@item.GiaSauGiam.ToString("N0") đ</span>
+                                    <span class="old-price">@item.Gia.ToString("N0") đ</span>
+                                </div>
+
+                                <div class="delivery-text">
+                                    <i class="fa-solid fa-bolt"></i> Đang khuyến mãi
+                                </div>
+                            </div>
+
+                            <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post">
+                                <input type="hidden" name="sanPhamId" value="@item.Id" />
+                                <input type="hidden" name="soLuong" value="1" />
+                                <button type="submit" class="add-btn">+</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="admin-form-card text-center">
+                    <h4>Hiện chưa có Flash Sale</h4>
+                    <p class="text-muted mb-0">Admin chưa thiết lập khuyến mãi cho sản phẩm nào.</p>
+                </div>
+            }
+        </section>
+
+        <section class="home-section">
+            <div class="section-heading-row">
+                <h3 class="section-title">Sản phẩm mới</h3>
+                <a asp-controller="SanPhamKhach" asp-action="Index" class="btn admin-secondary-btn">Xem tất cả</a>
+            </div>
+
+            <div class="product-row">
+                @foreach (var item in Model.DanhSachSanPhamMoi)
+                {
+                    var duongDanAnh = "/images/no-image.png";
+
+                    if (!string.IsNullOrWhiteSpace(item.HinhAnh))
+                    {
+                        if (item.HinhAnh.StartsWith("http://") || item.HinhAnh.StartsWith("https://"))
+                        {
+                            duongDanAnh = item.HinhAnh;
+                        }
+                        else if (item.HinhAnh.StartsWith("/images/"))
+                        {
+                            duongDanAnh = item.HinhAnh;
+                        }
+                        else
+                        {
+                            duongDanAnh = "/images/" + item.HinhAnh;
+                        }
+                    }
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <a asp-controller="SanPhamKhach" asp-action="ChiTiet" asp-route-id="@item.Id">
+                                <img src="@duongDanAnh" alt="@item.TenSanPham" />
+                            </a>
+                        </div>
+
+                        <div class="product-body">
+                            <div class="product-name">@item.TenSanPham</div>
+
+                            @if (item.DangKhuyenMai)
+                            {
+                                <div class="price-wrap flex-column align-items-start">
+                                    <span class="flash-sale-price">@item.GiaSauGiam.ToString("N0") đ</span>
+                                    <span class="old-price">@item.Gia.ToString("N0") đ</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="price-wrap">
+                                    <span class="product-price">@item.Gia.ToString("N0") đ</span>
+                                </div>
+                            }
+
+                            <div class="delivery-text">
+                                <i class="fa-solid fa-box"></i> Còn @item.SoLuongTon sản phẩm
+                            </div>
+                        </div>
+
+                        <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post">
+                            <input type="hidden" name="sanPhamId" value="@item.Id" />
+                            <input type="hidden" name="soLuong" value="1" />
+                            <button type="submit" class="add-btn">+</button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </section>
+    </section>
+</div>

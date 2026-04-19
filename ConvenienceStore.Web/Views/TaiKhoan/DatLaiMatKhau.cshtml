@@ -1,0 +1,28 @@
+﻿@model ConvenienceStore.Web.ViewModels.DatLaiMatKhauViewModel
+
+<h2>Dat lai mat khau</h2>
+
+<form asp-action="DatLaiMatKhau" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <input asp-for="Email" type="hidden" />
+    <input asp-for="Token" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="MatKhauMoi" class="form-label"></label>
+        <input asp-for="MatKhauMoi" class="form-control" />
+        <span asp-validation-for="MatKhauMoi" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="XacNhanMatKhau" class="form-label"></label>
+        <input asp-for="XacNhanMatKhau" class="form-control" />
+        <span asp-validation-for="XacNhanMatKhau" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Dat lai mat khau</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,82 @@
+﻿@model IEnumerable<ConvenienceStore.Web.ViewModels.NguoiDungAdminViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h2>Quản lý người dùng</h2>
+        <p>Danh sách tài khoản trong hệ thống</p>
+    </div>
+</div>
+
+@if (TempData["ThanhCong"] != null)
+{
+    <div class="alert alert-success">@TempData["ThanhCong"]</div>
+}
+
+@if (TempData["Loi"] != null)
+{
+    <div class="alert alert-danger">@TempData["Loi"]</div>
+}
+
+<div class="admin-table-card">
+    <table class="table admin-table align-middle">
+        <thead>
+            <tr>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.HoTen</td>
+                    <td>@item.Email</td>
+                    <td>
+                        @if (item.VaiTro == "Admin")
+                        {
+                            <span class="role-badge role-admin">Admin</span>
+                        }
+                        else
+                        {
+                            <span class="role-badge role-customer">Khách hàng</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.BiKhoa)
+                        {
+                            <span class="status-badge status-locked">Đã khóa</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-active">Đang hoạt động</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (item.BiKhoa)
+                        {
+                            <form asp-action="MoKhoa" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn admin-primary-btn btn-sm">Mở khóa</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="Khoa" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn admin-danger-btn btn-sm">Khóa</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

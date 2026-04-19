@@ -1,0 +1,133 @@
+﻿@model ConvenienceStore.Models.ViewModels.DashboardAdminViewModel
+@{
+    ViewData["Title"] = "Tổng quan quản trị";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="admin-dashboard">
+    <div class="dashboard-card-row">
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon bg-green">
+                <i class="fa-solid fa-box"></i>
+            </div>
+            <div class="dashboard-card-info">
+                <h3>@Model.TongSanPham</h3>
+                <p>Tổng sản phẩm</p>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon bg-blue">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div class="dashboard-card-info">
+                <h3>@Model.TongDanhMuc</h3>
+                <p>Danh mục</p>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon bg-orange">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <div class="dashboard-card-info">
+                <h3>@Model.TongDonHang</h3>
+                <p>Tổng đơn hàng</p>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon bg-red">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="dashboard-card-info">
+                <h3>@Model.TongNguoiDung</h3>
+                <p>Người dùng</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-panel">
+            <div class="dashboard-panel-header">
+                <h4>Hoạt động gần đây</h4>
+            </div>
+            <div class="dashboard-panel-body">
+                <ul class="activity-list">
+                    @if (Model.HoatDongGanDay.Any())
+                    {
+                        @foreach (var item in Model.HoatDongGanDay)
+                        {
+                            <li>
+                                <span class="activity-dot bg-green"></span>
+                                @item
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li>
+                            <span class="activity-dot bg-blue"></span>
+                            Chưa có hoạt động nào gần đây
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="dashboard-panel">
+            <div class="dashboard-panel-header">
+                <h4>Thống kê nhanh</h4>
+            </div>
+            <div class="dashboard-panel-body">
+                <div class="stat-box">
+                    <div class="stat-item">
+                        <span>Doanh thu đã giao</span>
+                        <strong>@Model.TongDoanhThu.ToString("N0") đ</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Đơn chờ xác nhận</span>
+                        <strong>@Model.DonChoXacNhan</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Sản phẩm sắp hết</span>
+                        <strong>@Model.SanPhamSapHetHang</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Tổng người dùng</span>
+                        <strong>@Model.TongNguoiDung</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-panel mt-4">
+        <div class="dashboard-panel-header">
+            <h4>Truy cập nhanh</h4>
+        </div>
+        <div class="dashboard-panel-body">
+            <div class="quick-action-grid">
+                <a asp-controller="DanhMuc" asp-action="Index" class="quick-action-card">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Danh mục</span>
+                </a>
+
+                <a asp-controller="SanPham" asp-action="Index" class="quick-action-card">
+                    <i class="fa-solid fa-box-open"></i>
+                    <span>Sản phẩm</span>
+                </a>
+
+                <a asp-controller="DonHang" asp-action="Index" class="quick-action-card">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>Đơn hàng</span>
+                </a>
+
+                <a asp-controller="NguoiDung" asp-action="Index" class="quick-action-card">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Người dùng</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

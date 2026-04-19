@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+<div class="auth-page">
+    <div class="auth-card text-center">
+        <div class="auth-header">
+            <h2>Đặt hàng thành công</h2>
+            <p>Đơn hàng của bạn đã được tạo thành công.</p>
+        </div>
+
+        <div class="mb-4">
+            <h4>Mã đơn hàng: <span style="color:#198754;">#@ViewBag.DonHangId</span></h4>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <a asp-controller="Home" asp-action="Index" class="btn auth-btn">Về trang chủ</a>
+            <a asp-controller="DonHang" asp-action="Index" class="btn admin-secondary-btn">Đến trang đơn hàng admin</a>
+        </div>
+    </div>
+</div>

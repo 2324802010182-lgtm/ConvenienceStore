@@ -1,0 +1,82 @@
+﻿@using ConvenienceStore.Models.HangSo
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ConvenienceStore</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="top-header">
+        <div class="header-left">
+            <div class="mini-logo-box">
+                <img src="~/images/logo-mini.png" alt="Logo" class="logo-mini" />
+            </div>
+
+            <div class="delivery-box">
+                <div class="delivery-label">Giao đến:</div>
+                <div class="delivery-address">
+                    <i class="fa-solid fa-location-dot"></i>
+                    Nhập địa chỉ giao hàng
+                </div>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <form asp-controller="SanPhamKhach" asp-action="TimKiem" method="get" class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" name="tuKhoa" placeholder="Tìm gì cũng có, mở cửa 24 giờ, giao hàng 24 phút" />
+            </form>
+        </div>
+
+        <div class="header-right">
+            <a href="/GioHang" class="account-btn" title="Giỏ hàng">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </a>
+
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <a href="/DonHangCuaToi" class="account-btn" title="Đơn hàng của tôi">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                </a>
+
+                @if (User.IsInRole(VaiTro.Admin))
+                {
+                    <a href="/QuanTri" class="account-btn admin-dashboard-btn" title="Quản trị hệ thống">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </a>
+                }
+
+                <form asp-controller="TaiKhoan" asp-action="DangXuat" method="post" class="d-inline">
+                    <button type="submit" class="account-btn logout-btn" title="Đăng xuất">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a href="/TaiKhoan/DangNhap" class="account-btn" title="Đăng nhập">
+                    <i class="fa-regular fa-user"></i>
+                </a>
+            }
+        </div>
+    </header>
+
+    <main class="page-body">
+        @RenderBody()
+    </main>
+
+    <footer class="footer-simple">
+        <div class="container">
+            <p class="mb-0">© 2026 ConvenienceStore - Website cửa hàng tiện lợi</p>
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

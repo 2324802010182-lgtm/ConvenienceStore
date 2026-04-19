@@ -1,0 +1,35 @@
+﻿@model ConvenienceStore.Models.Entities.DanhMuc
+
+@{
+    ViewData["Title"] = "Xóa danh mục";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="admin-form-card">
+    <div class="admin-page-header mb-4">
+        <div>
+            <h2>Xóa danh mục</h2>
+            <p>Xác nhận xóa dữ liệu</p>
+        </div>
+    </div>
+
+    <div class="alert alert-warning">
+        Bạn có chắc muốn xóa danh mục này không?
+    </div>
+
+    <div class="mb-3">
+        <strong>Tên danh mục:</strong> @Model.TenDanhMuc
+    </div>
+
+    <div class="mb-4">
+        <strong>Mô tả:</strong> @Model.MoTa
+    </div>
+
+    <form asp-action="Xoa" method="post">
+        <input asp-for="Id" type="hidden" />
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn admin-danger-btn">Xóa</button>
+            <a asp-action="Index" class="btn admin-secondary-btn">Hủy</a>
+        </div>
+    </form>
+</div>

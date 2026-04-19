@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Quản trị AKD Store</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-brand">
+                <img src="~/images/logo-mini.png" alt="Logo" class="admin-logo" />
+                <div>
+                    <h4>AKD Store</h4>
+                    <span>Quản trị hệ thống</span>
+                </div>
+            </div>
+
+            <ul class="admin-menu">
+                <li class="active">
+                    <a asp-controller="QuanTri" asp-action="Index">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Tổng quan</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a asp-controller="DanhMuc" asp-action="Index">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>Quản lý danh mục</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a asp-controller="SanPham" asp-action="Index">
+                        <i class="fa-solid fa-box-open"></i>
+                        <span>Quản lý sản phẩm</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a asp-controller="DonHang" asp-action="Index">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span>Quản lý đơn hàng</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a asp-controller="NguoiDung" asp-action="Index">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Quản lý người dùng</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a asp-controller="KhuyenMai" asp-action="Index">
+                        <i class="fa-solid fa-tags"></i>
+                        <span>Khuyến mãi</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Thống kê báo cáo</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <div class="admin-topbar-left">
+                    <h5>@ViewData["Title"]</h5>
+                    <p>Chào mừng bạn đến với khu vực quản trị</p>
+                </div>
+
+                <div class="admin-topbar-right">
+                    <a asp-controller="Home" asp-action="Index" class="admin-home-btn">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Trang chủ</span>
+                    </a>
+
+                    <form asp-controller="TaiKhoan" asp-action="DangXuat" method="post" class="d-inline">
+                        <button type="submit" class="admin-logout-btn">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span>Đăng xuất</span>
+                        </button>
+                    </form>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

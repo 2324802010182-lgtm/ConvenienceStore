@@ -1,0 +1,54 @@
+﻿@model IEnumerable<ConvenienceStore.Models.Entities.DanhMuc>
+
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="admin-page-header">
+    <div>
+        <h2>Quản lý danh mục</h2>
+        <p>Danh sách các danh mục sản phẩm trong hệ thống</p>
+    </div>
+    <a asp-action="ThemMoi" class="btn admin-primary-btn">
+        <i class="fa-solid fa-plus"></i> Thêm danh mục
+    </a>
+</div>
+
+<div class="admin-table-card">
+    <table class="table admin-table align-middle">
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.TenDanhMuc</td>
+                    <td>@item.MoTa</td>
+                    <td>
+                        @if (item.TrangThai)
+                        {
+                            <span class="status-badge status-active">Đang hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-inactive">Ngưng hoạt động</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <a asp-action="ChinhSua" asp-route-id="@item.Id" class="btn admin-warning-btn btn-sm">Sửa</a>
+                        <a asp-action="Xoa" asp-route-id="@item.Id" class="btn admin-danger-btn btn-sm">Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

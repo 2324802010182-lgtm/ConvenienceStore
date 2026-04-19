@@ -1,0 +1,60 @@
+﻿@model ConvenienceStore.Web.ViewModels.DatHangViewModel
+
+@{
+    ViewData["Title"] = "Đặt hàng";
+}
+
+<div class="auth-page">
+    <div class="auth-card" style="max-width: 700px;">
+        <div class="auth-header">
+            <h2>Đặt hàng</h2>
+            <p>Vui lòng kiểm tra thông tin trước khi xác nhận đơn hàng</p>
+        </div>
+
+        <form asp-action="DatHang" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <input asp-for="SanPhamId" type="hidden" />
+
+            <div class="mb-3">
+                <label class="form-label">Tên sản phẩm</label>
+                <input asp-for="TenSanPham" class="form-control auth-input" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Giá</label>
+                <input value="@Model.Gia.ToString("N0") đ" class="form-control auth-input" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SoLuong" class="form-label">Số lượng</label>
+                <input asp-for="SoLuong" class="form-control auth-input" />
+                <span asp-validation-for="SoLuong" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="HoTenNguoiNhan" class="form-label">Họ tên người nhận</label>
+                <input asp-for="HoTenNguoiNhan" class="form-control auth-input" />
+                <span asp-validation-for="HoTenNguoiNhan" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SoDienThoai" class="form-label">Số điện thoại</label>
+                <input asp-for="SoDienThoai" class="form-control auth-input" />
+                <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="DiaChiNhanHang" class="form-label">Địa chỉ nhận hàng</label>
+                <textarea asp-for="DiaChiNhanHang" class="form-control auth-input" rows="4"></textarea>
+                <span asp-validation-for="DiaChiNhanHang" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn auth-btn w-100">Xác nhận đặt hàng</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

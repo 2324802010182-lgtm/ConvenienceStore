@@ -1,0 +1,68 @@
+﻿@model ConvenienceStore.Web.ViewModels.DatHangTuGioViewModel
+
+@{
+    ViewData["Title"] = "Đặt hàng từ giỏ";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h2>Đặt hàng từ giỏ hàng</h2>
+        <p class="text-muted">Xác nhận thông tin đơn hàng của bạn</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="auth-card" style="max-width: 100%;">
+                <form asp-action="DatHangTuGio" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="HoTenNguoiNhan" class="form-label">Họ tên người nhận</label>
+                        <input asp-for="HoTenNguoiNhan" class="form-control auth-input" />
+                        <span asp-validation-for="HoTenNguoiNhan" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SoDienThoai" class="form-label">Số điện thoại</label>
+                        <input asp-for="SoDienThoai" class="form-control auth-input" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="DiaChiNhanHang" class="form-label">Địa chỉ nhận hàng</label>
+                        <textarea asp-for="DiaChiNhanHang" class="form-control auth-input" rows="4"></textarea>
+                        <span asp-validation-for="DiaChiNhanHang" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn auth-btn w-100">Xác nhận đặt hàng</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="admin-form-card">
+                <h4 class="mb-3">Sản phẩm trong giỏ</h4>
+
+                @foreach (var item in Model.DanhSachSanPham)
+                {
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2 gap-3">
+                        <div>
+                            <div class="fw-semibold">@item.TenSanPham</div>
+                            <small class="text-muted">Số lượng: @item.SoLuong</small>
+                        </div>
+                        <div class="fw-bold">@item.ThanhTien.ToString("N0") đ</div>
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between align-items-center pt-3 mt-2">
+                    <strong>Tổng tiền</strong>
+                    <strong style="color:#198754; font-size:18px;">@Model.TongTien.ToString("N0") đ</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

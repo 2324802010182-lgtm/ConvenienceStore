@@ -1,0 +1,61 @@
+﻿@model IEnumerable<ConvenienceStore.Models.Entities.SanPham>
+
+@{
+    ViewData["Title"] = "Sản phẩm";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h2>Tất cả sản phẩm</h2>
+        <p class="text-muted">Danh sách sản phẩm đang bán tại cửa hàng</p>
+    </div>
+
+    <div class="product-row">
+        @foreach (var item in Model)
+        {
+            var duongDanAnh = "/images/no-image.png";
+
+            if (!string.IsNullOrWhiteSpace(item.HinhAnh))
+            {
+                if (item.HinhAnh.StartsWith("http://") || item.HinhAnh.StartsWith("https://"))
+                {
+                    duongDanAnh = item.HinhAnh;
+                }
+                else if (item.HinhAnh.StartsWith("/images/"))
+                {
+                    duongDanAnh = item.HinhAnh;
+                }
+                else
+                {
+                    duongDanAnh = "/images/" + item.HinhAnh;
+                }
+            }
+
+            <div class="product-card">
+                <div class="product-image">
+                    <a asp-action="ChiTiet" asp-route-id="@item.Id">
+                        <img src="@duongDanAnh" alt="@item.TenSanPham" />
+                    </a>
+                </div>
+
+                <div class="product-body">
+                    <div class="product-name">@item.TenSanPham</div>
+
+                    <div class="price-wrap">
+                        <span class="product-price">@item.Gia.ToString("N0") đ</span>
+                    </div>
+
+                    <div class="delivery-text">
+                        <i class="fa-solid fa-box"></i> Còn @item.SoLuongTon sản phẩm
+                    </div>
+                </div>
+
+                <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post">
+                    <input type="hidden" name="sanPhamId" value="@item.Id" />
+                    <input type="hidden" name="soLuong" value="1" />
+                    <button type="submit" class="add-btn">+</button>
+                </form>
+            </div>
+        }
+    </div>
+</div>
