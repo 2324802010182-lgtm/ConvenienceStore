@@ -1,2 +1,13 @@
-﻿<h2>Thong bao</h2>
-<p>Neu email ton tai trong he thong, lien ket dat lai mat khau da duoc gui.</p>
+﻿@{
+    ViewData["Title"] = "Đã gửi email";
+}
+
+<div class="container mt-5">
+    <div class="alert alert-success">
+        <h4>Đã gửi email</h4>
+        <p>Nếu email tồn tại trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu đến hộp thư của bạn.</p>
+        <p>Vui lòng kiểm tra email, kể cả mục Spam hoặc Junk.</p>
+    </div>
+
+    <a asp-action="DangNhap" class="btn btn-primary">Quay lại đăng nhập</a>
+</div>

@@ -1,0 +1,93 @@
+﻿@model ConvenienceStore.Web.ViewModels.ChiTietDonHangAdminViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <partial name="_MenuQuanLyTaiKhoan" />
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="fw-bold mb-0">Chi tiết đơn hàng #@Model.Id</h3>
+                        <a asp-action="DonHang" class="btn btn-outline-dark rounded-pill">Quay lại</a>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Người nhận:</strong> @Model.HoTenNguoiNhan
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Số điện thoại:</strong> @Model.SoDienThoai
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Email:</strong> @Model.EmailNguoiDat
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Ngày đặt:</strong> @Model.NgayDatHang.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                        <div class="col-12 mb-3">
+                            <strong>Địa chỉ nhận hàng:</strong> @Model.DiaChiNhanHang
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Trạng thái:</strong> @Model.TrangThai
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Tổng tiền:</strong> @Model.TongTien.ToString("#,##0") đ
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-3">Sản phẩm trong đơn</h4>
+
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Ảnh</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Số lượng</th>
+                                    <th>Đơn giá</th>
+                                    <th>Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.DanhSachSanPham)
+                                {
+                                    <tr>
+                                        <td style="width: 90px;">
+                                            @if (!string.IsNullOrEmpty(item.HinhAnh))
+                                            {
+                                                <img src="@item.HinhAnh"
+                                                     alt="@item.TenSanPham"
+                                                     style="width:64px; height:64px; object-fit:cover; border-radius:12px; border:1px solid #e5e7eb;" />
+                                            }
+                                            else
+                                            {
+                                                <div style="width:64px; height:64px; border-radius:12px; background:#f1f5f9; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:center; color:#94a3b8;">
+                                                    <i class="fa-regular fa-image"></i>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>@item.TenSanPham</td>
+                                        <td>@item.SoLuong</td>
+                                        <td>@item.DonGia.ToString("#,##0") đ</td>
+                                        <td>@item.ThanhTien.ToString("#,##0") đ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

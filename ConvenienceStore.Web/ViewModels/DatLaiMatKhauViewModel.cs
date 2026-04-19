@@ -5,18 +5,21 @@ namespace ConvenienceStore.Web.ViewModels
     public class DatLaiMatKhauViewModel
     {
         [Required]
-        public string Email { get; set; }
+        public string Token { get; set; } = string.Empty;
 
-        [Required]
-        public string Token { get; set; }
+        [Required(ErrorMessage = "Email là bắt buộc")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Mat khau moi khong duoc de trong")]
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu mới")]
         [DataType(DataType.Password)]
-        public string MatKhauMoi { get; set; }
+        [Display(Name = "Mật khẩu mới")]
+        public string MatKhauMoi { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Xac nhan mat khau khong duoc de trong")]
+        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu")]
         [DataType(DataType.Password)]
-        [Compare("MatKhauMoi", ErrorMessage = "Xac nhan mat khau khong khop")]
-        public string XacNhanMatKhau { get; set; }
+        [Display(Name = "Xác nhận mật khẩu")]
+        [Compare("MatKhauMoi", ErrorMessage = "Xác nhận mật khẩu không khớp")]
+        public string XacNhanMatKhau { get; set; } = string.Empty;
     }
 }

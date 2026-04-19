@@ -1,3 +1,12 @@
-﻿<h2>Thanh cong</h2>
-<p>Ban da dat lai mat khau thanh cong. Hay dang nhap lai.</p>
-<a asp-action="DangNhap" class="btn btn-success">Dang nhap</a>
+﻿@{
+    ViewData["Title"] = "Đặt lại mật khẩu thành công";
+}
+
+<div class="container mt-5">
+    <div class="alert alert-success">
+        <h4>Đặt lại mật khẩu thành công</h4>
+        <p>Mật khẩu của bạn đã được cập nhật. Bây giờ bạn có thể đăng nhập bằng mật khẩu mới.</p>
+    </div>
+
+    <a asp-action="DangNhap" class="btn btn-primary">Đăng nhập ngay</a>
+</div>

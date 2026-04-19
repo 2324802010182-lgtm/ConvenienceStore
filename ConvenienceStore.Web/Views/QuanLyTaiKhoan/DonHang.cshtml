@@ -1,0 +1,74 @@
+﻿@model List<ConvenienceStore.Web.ViewModels.DonHangAdminViewModel>
+
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<div class="account-page">
+    <div class="container">
+        <div class="account-shell">
+            <div>
+                <partial name="_MenuQuanLyTaiKhoan" />
+            </div>
+
+            <div class="section-card">
+                <div class="section-head">
+                    <div>
+                        <h3 class="section-title">Đơn hàng của tôi</h3>
+                        <p class="section-subtitle">Danh sách toàn bộ đơn hàng bạn đã đặt</p>
+                    </div>
+                </div>
+
+                <div class="section-body">
+                    <div class="table-wrap">
+                        <div class="table-responsive">
+                            <table class="table table-modern align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Người nhận</th>
+                                        <th>SĐT</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Any())
+                                    {
+                                        foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td class="order-code">#@item.Id</td>
+                                                <td>@item.HoTenNguoiNhan</td>
+                                                <td>@item.SoDienThoai</td>
+                                                <td>@item.NgayDatHang.ToString("dd/MM/yyyy")</td>
+                                                <td>@item.TongTien.ToString("#,##0") đ</td>
+                                                <td>@item.TrangThai</td>
+                                                <td>
+                                                    <a asp-action="ChiTietDonHang" asp-route-id="@item.Id" class="soft-btn">
+                                                        <i class="fa-regular fa-eye"></i>
+                                                        Chi tiết
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7">
+                                                <div class="empty-box">Chưa có đơn hàng nào.</div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

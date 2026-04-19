@@ -1,0 +1,51 @@
+﻿@model ConvenienceStore.Web.ViewModels.DoiMatKhauTaiKhoanViewModel
+
+@{
+    ViewData["Title"] = "Đổi mật khẩu";
+}
+
+<div class="account-page">
+    <div class="container">
+        <div class="account-shell">
+            <div>
+                <partial name="_MenuQuanLyTaiKhoan" />
+            </div>
+
+            <div class="section-card">
+                <div class="section-head">
+                    <div>
+                        <h3 class="section-title">Đổi mật khẩu</h3>
+                        <p class="section-subtitle">Hệ thống sẽ gửi liên kết xác nhận về email của bạn</p>
+                    </div>
+                </div>
+
+                <div class="section-body">
+                    @if (TempData["ThanhCong"] != null)
+                    {
+                        <div class="alert alert-success rounded-4">@TempData["ThanhCong"]</div>
+                    }
+
+                    <div class="form-shell">
+                        <div class="note-box mb-4">
+                            <i class="fa-solid fa-shield-halved me-2"></i>
+                            Vì lý do bảo mật, bạn sẽ đổi mật khẩu thông qua liên kết được gửi về email.
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label form-label-modern">Email nhận liên kết</label>
+                            <input class="form-control form-control-modern readonly-box" value="@Model.Email" disabled />
+                        </div>
+
+                        <form asp-action="GuiLinkDoiMatKhau" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="primary-btn">
+                                <i class="fa-regular fa-paper-plane"></i>
+                                Gửi liên kết đổi mật khẩu
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

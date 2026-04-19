@@ -1,0 +1,133 @@
+﻿@model ConvenienceStore.Web.ViewModels.QuanLyTaiKhoanTongQuanViewModel
+
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<div class="account-page">
+    <div class="container">
+        <div class="account-shell">
+            <div>
+                <partial name="_MenuQuanLyTaiKhoan" />
+            </div>
+
+            <div>
+                <div class="account-hero">
+                    <h2>Welcome back, @Model.HoTen! 👋</h2>
+                    <p>Quản lý tài khoản và đơn hàng của bạn tại Convenience Store</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon total">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Tổng đơn hàng</div>
+                            <div class="stat-value">@Model.TongDonHang</div>
+                            <a asp-action="DonHang" class="stat-link">Xem tất cả →</a>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <i class="fa-regular fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Chờ xử lý</div>
+                            <div class="stat-value">@Model.DonDangXuLy</div>
+                            <a asp-action="DonHang" class="stat-link">Xem chi tiết →</a>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon shipping">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Đang giao</div>
+                            <div class="stat-value">@Model.DonDangGiao</div>
+                            <a asp-action="DonHang" class="stat-link">Theo dõi →</a>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon done">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Hoàn thành</div>
+                            <div class="stat-value">@Model.DonHoanThanh</div>
+                            <a asp-action="DonHang" class="stat-link">Xem lịch sử →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-head">
+                        <div>
+                            <h3 class="section-title">
+                                <i class="fa-solid fa-clock-rotate-left me-2"></i>Đơn hàng gần đây
+                            </h3>
+                            <p class="section-subtitle">Theo dõi nhanh các đơn hàng mới nhất của bạn</p>
+                        </div>
+
+                        <a asp-action="DonHang" class="soft-btn">Xem tất cả</a>
+                    </div>
+
+                    <div class="section-body">
+                        <div class="table-wrap">
+                            <div class="table-responsive">
+                                <table class="table table-modern align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã đơn</th>
+                                            <th>Ngày đặt</th>
+                                            <th>Số lượng</th>
+                                            <th>Tổng tiền</th>
+                                            <th>Trạng thái</th>
+                                            <th>Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.DonHangGanDay.Any())
+                                        {
+                                            foreach (var item in Model.DonHangGanDay)
+                                            {
+                                                <tr>
+                                                    <td class="order-code">#@item.Id</td>
+                                                    <td>@item.NgayDat.ToString("dd/MM/yyyy")</td>
+                                                    <td>@item.SoLuongSanPham sản phẩm</td>
+                                                    <td>@item.TongTien.ToString("#,##0") đ</td>
+                                                    <td>
+                                                        <span class="badge-soft @item.CssTrangThai">@item.TrangThai</span>
+                                                    </td>
+                                                    <td>
+                                                        <a asp-action="ChiTietDonHang" asp-route-id="@item.Id" class="soft-btn">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                            Chi tiết
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6">
+                                                    <div class="empty-box">
+                                                        Bạn chưa có đơn hàng nào.
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
