@@ -41,12 +41,21 @@ namespace ConvenienceStore.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            var kiemTraEmail = await _userManager.FindByEmailAsync(model.Email);
+            if (kiemTraEmail != null)
+            {
+                ModelState.AddModelError("", "Email này đã tồn tại.");
+                return View(model);
+            }
+
             var nguoiDung = new NguoiDung
             {
                 UserName = model.Email,
                 Email = model.Email,
                 HoTen = model.HoTen,
-                DiaChi = model.DiaChi
+                DiaChi = model.DiaChi,
+                EmailConfirmed = true,
+                LockoutEnabled = true
             };
 
             var ketQua = await _userManager.CreateAsync(nguoiDung, model.MatKhau);
@@ -79,10 +88,21 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> DangNhap(DangNhapViewModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
+            {
+                ViewBag.ReturnUrl = returnUrl;
                 return View(model);
+            }
+
+            var nguoiDung = await _userManager.FindByEmailAsync(model.Email);
+            if (nguoiDung == null)
+            {
+                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng");
+                ViewBag.ReturnUrl = returnUrl;
+                return View(model);
+            }
 
             var ketQua = await _signInManager.PasswordSignInAsync(
-                model.Email,
+                nguoiDung.UserName!,
                 model.MatKhau,
                 model.GhiNhoDangNhap,
                 lockoutOnFailure: false);
@@ -92,20 +112,29 @@ namespace ConvenienceStore.Web.Controllers
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
 
+                if (await _userManager.IsInRoleAsync(nguoiDung, VaiTro.Admin) ||
+                    await _userManager.IsInRoleAsync(nguoiDung, VaiTro.NhanVien))
+                {
+                    return RedirectToAction("Index", "QuanTri");
+                }
+
                 return RedirectToAction("Index", "Home");
             }
 
             if (ketQua.IsLockedOut)
             {
                 ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa.");
+                ViewBag.ReturnUrl = returnUrl;
                 return View(model);
             }
 
             ModelState.AddModelError("", "Email hoặc mật khẩu không đúng");
+            ViewBag.ReturnUrl = returnUrl;
             return View(model);
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> DangXuat()
         {
             await _signInManager.SignOutAsync();

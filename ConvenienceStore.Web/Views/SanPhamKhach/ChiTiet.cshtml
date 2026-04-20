@@ -37,7 +37,18 @@
                 <div class="col-md-7">
                     <h2>@Model.SanPham.TenSanPham</h2>
                     <p class="text-muted mb-2">Danh mục: @Model.SanPham.DanhMuc?.TenDanhMuc</p>
-                    <h3 style="color:#198754;">@Model.SanPham.Gia.ToString("N0") đ</h3>
+
+                    @if (Model.SanPham.DangKhuyenMai)
+                    {
+                        <div class="price-wrap flex-column align-items-start mb-3">
+                            <span class="flash-sale-price">@Model.SanPham.GiaSauGiam.ToString("N0") đ</span>
+                            <span class="old-price">@Model.SanPham.Gia.ToString("N0") đ</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <h3 style="color:#198754;">@Model.SanPham.Gia.ToString("N0") đ</h3>
+                    }
 
                     <div class="mb-3">
                         <strong>Số lượng còn:</strong> @Model.SanPham.SoLuongTon
@@ -61,6 +72,137 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="admin-form-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h3 class="mb-0">Đánh giá sản phẩm</h3>
+                <span class="text-muted">@Model.ThongKeDanhGia.TongSoDanhGia đánh giá</span>
+            </div>
+
+            @if (TempData["ThanhCong"] != null)
+            {
+                <div class="alert alert-success">@TempData["ThanhCong"]</div>
+            }
+
+            @if (TempData["Loi"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Loi"]</div>
+            }
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="border rounded p-3 text-center h-100">
+                        <div style="font-size:36px; font-weight:700; color:#f5b301;">
+                            @Model.ThongKeDanhGia.DiemTrungBinh
+                        </div>
+                        <div class="text-muted">Trung bình / 5 sao</div>
+                        <div class="mt-2">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= Math.Round(Model.ThongKeDanhGia.DiemTrungBinh))
+                                {
+                                    <i class="fa-solid fa-star" style="color:#f5b301;"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa-regular fa-star" style="color:#f5b301;"></i>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="border rounded p-3 h-100">
+                        <div class="mb-2">5 sao: <strong>@Model.ThongKeDanhGia.SoLuong5Sao</strong></div>
+                        <div class="mb-2">4 sao: <strong>@Model.ThongKeDanhGia.SoLuong4Sao</strong></div>
+                        <div class="mb-2">3 sao: <strong>@Model.ThongKeDanhGia.SoLuong3Sao</strong></div>
+                        <div class="mb-2">2 sao: <strong>@Model.ThongKeDanhGia.SoLuong2Sao</strong></div>
+                        <div>1 sao: <strong>@Model.ThongKeDanhGia.SoLuong1Sao</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.CoTheDanhGia)
+            {
+                <form asp-action="GuiDanhGia" method="post" enctype="multipart/form-data" class="mb-4">
+                    <input type="hidden" name="SanPhamId" value="@Model.SanPham.Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Số sao</label>
+                        <select name="SoSao" class="form-select admin-input" required>
+                            <option value="">-- Chọn số sao --</option>
+                            <option value="5">5 sao</option>
+                            <option value="4">4 sao</option>
+                            <option value="3">3 sao</option>
+                            <option value="2">2 sao</option>
+                            <option value="1">1 sao</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bình luận</label>
+                        <textarea name="BinhLuan" class="form-control admin-input" rows="4"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Hình ảnh đánh giá (không bắt buộc)</label>
+                        <input name="TepHinhAnh" type="file" class="form-control admin-input" accept="image/*" />
+                    </div>
+
+                    <button type="submit" class="btn auth-btn">Gửi đánh giá</button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-secondary">
+                    Bạn chỉ có thể đánh giá khi đã mua sản phẩm này và chưa đánh giá sản phẩm này.
+                </div>
+            }
+
+            @if (Model.DanhSachDanhGia.Any())
+            {
+                @foreach (var dg in Model.DanhSachDanhGia)
+                {
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+                            <strong>@(dg.NguoiDung?.HoTen ?? dg.NguoiDung?.Email ?? "Khách hàng")</strong>
+                            <small class="text-muted">@dg.NgayDanhGia.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+
+                        <div class="mb-2" style="color:#f5b301; font-size:18px;">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= dg.SoSao)
+                                {
+                                    <i class="fa-solid fa-star"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa-regular fa-star"></i>
+                                }
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(dg.BinhLuan))
+                        {
+                            <p class="mb-2">@dg.BinhLuan</p>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(dg.HinhAnhDanhGia))
+                        {
+                            <img src="@dg.HinhAnhDanhGia"
+                                 alt="Ảnh đánh giá"
+                                 style="max-width:180px; border-radius:12px; object-fit:cover;" />
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted mb-0">Chưa có đánh giá nào cho sản phẩm này.</p>
+            }
         </div>
 
         @if (Model.SanPhamLienQuan.Any())
@@ -98,9 +240,20 @@
 
                             <div class="product-body">
                                 <div class="product-name">@item.TenSanPham</div>
-                                <div class="price-wrap">
-                                    <span class="product-price">@item.Gia.ToString("N0") đ</span>
-                                </div>
+
+                                @if (item.DangKhuyenMai)
+                                {
+                                    <div class="price-wrap flex-column align-items-start">
+                                        <span class="flash-sale-price">@item.GiaSauGiam.ToString("N0") đ</span>
+                                        <span class="old-price">@item.Gia.ToString("N0") đ</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="price-wrap">
+                                        <span class="product-price">@item.Gia.ToString("N0") đ</span>
+                                    </div>
+                                }
                             </div>
 
                             <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post">
@@ -114,4 +267,8 @@
             </section>
         }
     </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

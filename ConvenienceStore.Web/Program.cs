@@ -8,8 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using ConvenienceStore.Web.Services;
 using ConvenienceStore.Web.ViewModels;
 using ConvenienceStore.Web.DuLieuKhoiTao;
-using ConvenienceStore.Business.Interfaces;
-using ConvenienceStore.Business.Services;
+using ConvenienceStore.Models.Entities;
+using ConvenienceStore.Models.HangSo;
+using Microsoft.AspNetCore.Identity;
 using ConvenienceStore.Business.Interfaces;
 using ConvenienceStore.Business.Services;
 var builder = WebApplication.CreateBuilder(args);
@@ -46,7 +47,7 @@ builder.Services.AddScoped<IDichVuSanPham, DichVuSanPham>();
 builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
-
+builder.Services.AddScoped<IDichVuDanhGiaSanPham, DichVuDanhGiaSanPham>();
 builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IDichVuDashboardAdmin, DichVuDashboardAdmin>();
@@ -60,6 +61,29 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<NguoiDung>>();
+
+    string[] dsVaiTro = { VaiTro.Admin, VaiTro.NhanVien, VaiTro.KhachHang };
+
+    foreach (var vaiTro in dsVaiTro)
+    {
+        if (!await roleManager.RoleExistsAsync(vaiTro))
+        {
+            await roleManager.CreateAsync(new IdentityRole(vaiTro));
+        }
+    }
+
+    var adminEmail = "admin@akdstore.com";
+    var admin = await userManager.FindByEmailAsync(adminEmail);
+
+    if (admin != null && !await userManager.IsInRoleAsync(admin, VaiTro.Admin))
+    {
+        await userManager.AddToRoleAsync(admin, VaiTro.Admin);
+    }
+}
 using (var scope = app.Services.CreateScope())
 {
     var dichVu = scope.ServiceProvider;

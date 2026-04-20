@@ -25,14 +25,14 @@ namespace ConvenienceStore.Web.Controllers
             _dichVuDonHang = dichVuDonHang;
         }
 
-        [Authorize(Roles = VaiTro.Admin)]
+        [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
         public async Task<IActionResult> Index()
         {
             var danhSachSanPham = await _dichVuSanPham.LayTatCaKemDanhMucAsync();
             return View(danhSachSanPham);
         }
 
-        [Authorize(Roles = VaiTro.Admin)]
+        [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
         [HttpGet]
         public async Task<IActionResult> ThemMoi()
         {
@@ -44,7 +44,7 @@ namespace ConvenienceStore.Web.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = VaiTro.Admin)]
+        [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
         [HttpPost]
         public async Task<IActionResult> ThemMoi(SanPhamViewModel model)
         {
@@ -69,7 +69,7 @@ namespace ConvenienceStore.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = VaiTro.Admin)]
+        [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
         [HttpGet]
         public async Task<IActionResult> ChinhSua(int id)
         {
@@ -93,7 +93,7 @@ namespace ConvenienceStore.Web.Controllers
             return View(model);
         }
 
-        [Authorize(Roles = VaiTro.Admin)]
+        [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
         [HttpPost]
         public async Task<IActionResult> ChinhSua(SanPhamViewModel model)
         {
@@ -128,7 +128,7 @@ namespace ConvenienceStore.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Roles = VaiTro.Admin)]
+        [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
         [HttpGet]
         public async Task<IActionResult> Xoa(int id)
         {
@@ -139,7 +139,7 @@ namespace ConvenienceStore.Web.Controllers
             return View(sanPham);
         }
 
-        [Authorize(Roles = VaiTro.Admin)]
+        [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
         [HttpPost, ActionName("Xoa")]
         public async Task<IActionResult> XacNhanXoa(int id)
         {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ConvenienceStore.Web.Controllers
 {
-    [Authorize(Roles = VaiTro.Admin)]
+    [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
     public class ThongKeBaoCaoController : Controller
     {
         private readonly IDichVuThongKeBaoCao _dichVuThongKeBaoCao;

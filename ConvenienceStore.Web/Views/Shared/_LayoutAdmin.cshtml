@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using ConvenienceStore.Models.HangSo
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -21,7 +22,7 @@
             </div>
 
             <ul class="admin-menu">
-                <li class="active">
+                <li>
                     <a asp-controller="QuanTri" asp-action="Index">
                         <i class="fa-solid fa-chart-line"></i>
                         <span>Tổng quan</span>
@@ -50,11 +51,21 @@
                 </li>
 
                 <li>
-                    <a asp-controller="NguoiDung" asp-action="Index">
-                        <i class="fa-solid fa-users"></i>
-                        <span>Quản lý người dùng</span>
+                    <a asp-controller="DanhGia" asp-action="Index">
+                        <i class="fa-solid fa-star"></i>
+                        <span>Quản lý đánh giá</span>
                     </a>
                 </li>
+
+                @if (User.IsInRole(VaiTro.Admin))
+                {
+                    <li>
+                        <a asp-controller="NguoiDung" asp-action="Index">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Quản lý người dùng</span>
+                        </a>
+                    </li>
+                }
 
                 <li>
                     <a asp-controller="KhuyenMai" asp-action="Index">
@@ -62,12 +73,23 @@
                         <span>Khuyến mãi</span>
                     </a>
                 </li>
+
                 <li>
                     <a asp-controller="ThongKeBaoCao" asp-action="Index">
                         <i class="fa-solid fa-chart-pie"></i>
                         <span>Thống kê báo cáo</span>
                     </a>
                 </li>
+
+                @if (User.IsInRole(VaiTro.Admin))
+                {
+                    <li>
+                        <a asp-controller="NhanVien" asp-action="TaoTaiKhoan">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Tạo tài khoản nhân viên</span>
+                        </a>
+                    </li>
+                }
             </ul>
         </aside>
 

@@ -1,4 +1,6 @@
 ﻿@model ConvenienceStore.Models.ViewModels.DashboardAdminViewModel
+@using ConvenienceStore.Models.HangSo
+
 @{
     ViewData["Title"] = "Tổng quan quản trị";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
@@ -123,9 +125,27 @@
                     <span>Đơn hàng</span>
                 </a>
 
-                <a asp-controller="NguoiDung" asp-action="Index" class="quick-action-card">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Người dùng</span>
+                @if (User.IsInRole(VaiTro.Admin))
+                {
+                    <a asp-controller="NguoiDung" asp-action="Index" class="quick-action-card">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Người dùng</span>
+                    </a>
+
+                    <a asp-controller="NhanVien" asp-action="TaoTaiKhoan" class="quick-action-card">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Tạo tài khoản nhân viên</span>
+                    </a>
+                }
+
+                <a asp-controller="KhuyenMai" asp-action="Index" class="quick-action-card">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>Khuyến mãi</span>
+                </a>
+
+                <a asp-controller="ThongKeBaoCao" asp-action="Index" class="quick-action-card">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Báo cáo</span>
                 </a>
             </div>
         </div>

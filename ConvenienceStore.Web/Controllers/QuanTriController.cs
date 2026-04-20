@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using ConvenienceStore.Models.ViewModels;
 namespace ConvenienceStore.Web.Controllers
 {
-    [Authorize(Roles = VaiTro.Admin)]
+    [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
     public class QuanTriController : Controller
     {
         private readonly IDichVuDashboardAdmin _dichVuDashboardAdmin;

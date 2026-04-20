@@ -15,7 +15,7 @@ namespace ConvenienceStore.DataAccess
         public DbSet<SanPham> SanPhams { get; set; }
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
-
+        public DbSet<DanhGiaSanPham> DanhGiaSanPhams { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -24,7 +24,18 @@ namespace ConvenienceStore.DataAccess
             modelBuilder.Entity<SanPham>().ToTable("SanPhams");
             modelBuilder.Entity<DonHang>().ToTable("DonHangs");
             modelBuilder.Entity<ChiTietDonHang>().ToTable("ChiTietDonHangs");
+            modelBuilder.Entity<DanhGiaSanPham>().ToTable("DanhGiaSanPhams");
+            modelBuilder.Entity<DanhGiaSanPham>()
+                 .HasOne(x => x.SanPham)
+                 .WithMany()
+                 .HasForeignKey(x => x.SanPhamId)
+                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<DanhGiaSanPham>()
+                .HasOne(x => x.NguoiDung)
+                .WithMany()
+                .HasForeignKey(x => x.NguoiDungId)
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<DanhMuc>()
                 .HasMany(dm => dm.DanhSachSanPham)
                 .WithOne(sp => sp.DanhMuc)

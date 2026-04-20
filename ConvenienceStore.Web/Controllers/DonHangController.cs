@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ConvenienceStore.Web.Controllers
 {
-    [Authorize(Roles = VaiTro.Admin)]
+    [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
     public class DonHangController : Controller
     {
         private readonly IDichVuDonHang _dichVuDonHang;
