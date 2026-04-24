@@ -14,9 +14,9 @@
 <body>
     <header class="top-header">
         <div class="header-left">
-            <div class="mini-logo-box">
+            <a asp-controller="Home" asp-action="Index" class="mini-logo-box">
                 <img src="~/images/logo-mini.png" alt="Logo" class="logo-mini" />
-            </div>
+            </a>
 
             <div class="delivery-box">
                 <div class="delivery-label">Giao đến:</div>
@@ -73,9 +73,77 @@
         @RenderBody()
     </main>
 
-    <footer class="footer-simple">
-        <div class="container">
-            <p class="mb-0">© 2026 ConvenienceStore - Website cửa hàng tiện lợi</p>
+    <footer class="site-footer">
+        <div class="footer-wave"></div>
+
+        <div class="container footer-container">
+            <div class="footer-grid">
+                <!-- Cột 1: Thương hiệu -->
+                <div class="footer-col footer-brand">
+                    <a asp-controller="Home" asp-action="Index" class="footer-logo-wrap">
+                        <img src="~/images/logo-mini.png" alt="AKD Store" class="footer-logo" />
+                        <div>
+                            <h4>AKD Store</h4>
+                            <p>Cửa hàng tiện lợi thân thiện - nhanh chóng - tiện ích mỗi ngày.</p>
+                        </div>
+                    </a>
+
+                    <div class="footer-badges">
+                        <span><i class="fa-solid fa-clock"></i> Mở cửa 24/7</span>
+                        <span><i class="fa-solid fa-truck-fast"></i> Giao hàng nhanh</span>
+                        <span><i class="fa-solid fa-shield-heart"></i> Sản phẩm chất lượng</span>
+                    </div>
+                </div>
+
+                <!-- Cột 2: Liên kết -->
+                <div class="footer-col">
+                    <h5>Khám phá</h5>
+                    <ul class="footer-links">
+                        <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                        <li><a asp-controller="SanPhamKhach" asp-action="Index">Sản phẩm</a></li>
+                        <li><a asp-controller="GioHang" asp-action="Index">Giỏ hàng</a></li>
+                        <li><a asp-controller="DonHangCuaToi" asp-action="Index">Đơn hàng của tôi</a></li>
+                    </ul>
+                </div>
+
+                <!-- Cột 3: Hỗ trợ -->
+                <div class="footer-col">
+                    <h5>Hỗ trợ khách hàng</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Chính sách mua hàng</a></li>
+                        <li><a href="#">Chính sách giao hàng</a></li>
+                        <li><a href="#">Chính sách đổi trả</a></li>
+                        <li><a href="#">Câu hỏi thường gặp</a></li>
+                    </ul>
+                </div>
+
+                <!-- Cột 4: Liên hệ -->
+                <div class="footer-col">
+                    <h5>Liên hệ</h5>
+                    <ul class="footer-contact">
+                        <li><i class="fa-solid fa-location-dot"></i> TP. Hồ Chí Minh, Việt Nam</li>
+                        <li><i class="fa-solid fa-phone"></i> 0909 123 456</li>
+                        <li><i class="fa-solid fa-envelope"></i> support@akdstore.com</li>
+                        <li><i class="fa-solid fa-clock"></i> Phục vụ mọi ngày, 24/7</li>
+                    </ul>
+
+                    <div class="footer-social">
+                        <a href="#" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                        <a href="#" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    © 2026 <strong>AKD Store</strong> - Website cửa hàng tiện lợi
+                </div>
+                <div class="footer-bottom-right">
+                    <span>Thiết kế hiện đại • Giao diện thân thiện • Trải nghiệm tiện lợi</span>
+                </div>
+            </div>
         </div>
     </footer>
 

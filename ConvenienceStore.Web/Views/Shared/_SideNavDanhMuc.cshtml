@@ -1,0 +1,27 @@
+﻿@model IEnumerable<ConvenienceStore.Models.Entities.DanhMuc>
+
+<aside class="home-sidebar">
+    <div class="sidebar-logo-box">
+        <a asp-controller="Home" asp-action="Index" class="sidebar-logo-link">
+            <img src="~/images/logo-big.png" alt="AKD Store" class="sidebar-logo-big" />
+        </a>
+    </div>
+
+    <div class="sidebar-title">
+        DANH MỤC SẢN PHẨM
+    </div>
+
+    <ul class="sidebar-category-list">
+        @foreach (var danhMuc in Model)
+        {
+            <li>
+                <a asp-controller="SanPhamKhach"
+                   asp-action="TheoDanhMuc"
+                   asp-route-id="@danhMuc.Id"
+                   class="sidebar-category-link">
+                    @danhMuc.TenDanhMuc
+                </a>
+            </li>
+        }
+    </ul>
+</aside>
