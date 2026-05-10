@@ -14,15 +14,18 @@ namespace ConvenienceStore.Web.Controllers
         private readonly IDichVuSanPham _dichVuSanPham;
         private readonly IDichVuDanhMuc _dichVuDanhMuc;
         private readonly IDichVuDonHang _dichVuDonHang;
+        private readonly IDichVuDiemTichLuy _dichVuDiemTichLuy;
 
         public SanPhamController(
-            IDichVuSanPham dichVuSanPham,
-            IDichVuDanhMuc dichVuDanhMuc,
-            IDichVuDonHang dichVuDonHang)
+        IDichVuSanPham dichVuSanPham,
+        IDichVuDanhMuc dichVuDanhMuc,
+        IDichVuDonHang dichVuDonHang,
+        IDichVuDiemTichLuy dichVuDiemTichLuy)
         {
             _dichVuSanPham = dichVuSanPham;
             _dichVuDanhMuc = dichVuDanhMuc;
             _dichVuDonHang = dichVuDonHang;
+            _dichVuDiemTichLuy = dichVuDiemTichLuy;
         }
 
         [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
@@ -152,8 +155,16 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> DatHang(int id)
         {
             var sanPham = await _dichVuSanPham.LayTheoIdAsync(id);
+
             if (sanPham == null)
                 return NotFound();
+
+            var nguoiDungId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(nguoiDungId))
+                return Challenge();
+
+            var diemHienCo = await _dichVuDiemTichLuy.LayDiemHienCoAsync(nguoiDungId);
 
             var giaApDung = sanPham.DangKhuyenMai ? sanPham.GiaSauGiam : sanPham.Gia;
 
@@ -162,7 +173,9 @@ namespace ConvenienceStore.Web.Controllers
                 SanPhamId = sanPham.Id,
                 TenSanPham = sanPham.TenSanPham,
                 Gia = giaApDung,
-                SoLuong = 1
+                SoLuong = 1,
+                DiemHienCo = diemHienCo,
+                DiemMuonDoi = 0
             };
 
             return View(model);
@@ -170,14 +183,48 @@ namespace ConvenienceStore.Web.Controllers
 
         [Authorize]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DatHang(DatHangViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
             var nguoiDungId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (string.IsNullOrEmpty(nguoiDungId))
                 return Challenge();
+
+            var sanPham = await _dichVuSanPham.LayTheoIdAsync(model.SanPhamId);
+
+            if (sanPham == null)
+                return NotFound();
+
+            var giaApDung = sanPham.DangKhuyenMai ? sanPham.GiaSauGiam : sanPham.Gia;
+
+            model.TenSanPham = sanPham.TenSanPham;
+            model.Gia = giaApDung;
+
+            var diemHienCo = await _dichVuDiemTichLuy.LayDiemHienCoAsync(nguoiDungId);
+            model.DiemHienCo = diemHienCo;
+
+            if (model.SoLuong <= 0)
+                model.SoLuong = 1;
+
+            var tongTien = giaApDung * model.SoLuong;
+
+            var diemToiDaTheoTongTien = (int)Math.Floor(tongTien / 1000m);
+            var diemToiDaDuocDung = Math.Min(diemHienCo, diemToiDaTheoTongTien);
+
+            if (model.DiemMuonDoi < 0)
+                model.DiemMuonDoi = 0;
+
+            if (model.DiemMuonDoi > diemToiDaDuocDung)
+                model.DiemMuonDoi = diemToiDaDuocDung;
+
+            var tienGiamTuDiem = model.DiemMuonDoi * 1000m;
+
+            if (tienGiamTuDiem > tongTien)
+                tienGiamTuDiem = tongTien;
+
+            if (!ModelState.IsValid)
+                return View(model);
 
             try
             {
@@ -187,7 +234,17 @@ namespace ConvenienceStore.Web.Controllers
                     model.SoLuong,
                     model.HoTenNguoiNhan,
                     model.SoDienThoai,
-                    model.DiaChiNhanHang);
+                    model.DiaChiNhanHang,
+                    model.DiemMuonDoi,
+                    tienGiamTuDiem);
+
+                if (model.DiemMuonDoi > 0)
+                {
+                    await _dichVuDiemTichLuy.DoiDiemAsync(
+                        nguoiDungId,
+                        donHangId,
+                        model.DiemMuonDoi);
+                }
 
                 return RedirectToAction(nameof(DatHangThanhCong), new { id = donHangId });
             }

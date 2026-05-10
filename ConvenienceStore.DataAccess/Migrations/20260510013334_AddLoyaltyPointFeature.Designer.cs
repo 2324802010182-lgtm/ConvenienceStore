@@ -4,6 +4,7 @@ using ConvenienceStore.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ConvenienceStore.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510013334_AddLoyaltyPointFeature")]
+    partial class AddLoyaltyPointFeature
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,9 +131,6 @@ namespace ConvenienceStore.DataAccess.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<int>("DiemDaSuDung")
-                        .HasColumnType("int");
-
                     b.Property<string>("HoTenNguoiNhan")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -148,16 +148,7 @@ namespace ConvenienceStore.DataAccess.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<decimal>("TienGiamTuDiem")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("TongTien")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TongTienSauGiam")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TrangThai")
@@ -178,11 +169,11 @@ namespace ConvenienceStore.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("DonHangId")
-                        .HasColumnType("int");
-
                     b.Property<string>("GhiChu")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("HoaDonId")
+                        .HasColumnType("int");
 
                     b.Property<string>("LoaiGiaoDich")
                         .IsRequired()
@@ -191,9 +182,8 @@ namespace ConvenienceStore.DataAccess.Migrations
                     b.Property<DateTime>("NgayTao")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("NguoiDungId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("NguoiDungId")
+                        .HasColumnType("int");
 
                     b.Property<int>("SoDiem")
                         .HasColumnType("int");
@@ -221,9 +211,6 @@ namespace ConvenienceStore.DataAccess.Migrations
 
                     b.Property<string>("DiaChi")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DiemTichLuy")
-                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)

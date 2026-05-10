@@ -15,7 +15,12 @@
 
         <div class="d-flex gap-2 justify-content-center flex-wrap">
             <a asp-controller="Home" asp-action="Index" class="btn auth-btn">Về trang chủ</a>
-            <a asp-controller="DonHang" asp-action="Index" class="btn admin-secondary-btn">Đến trang đơn hàng admin</a>
+            <a asp-controller="QuanLyTaiKhoan"
+               asp-action="ChiTietDonHang"
+               asp-route-id="@ViewBag.DonHangId"
+               class="btn admin-secondary-btn">
+                Xem chi tiết đơn hàng
+            </a>
         </div>
     </div>
 </div>

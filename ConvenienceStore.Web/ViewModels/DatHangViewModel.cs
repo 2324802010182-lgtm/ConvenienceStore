@@ -21,5 +21,9 @@ namespace ConvenienceStore.Web.ViewModels
 
         [Range(1, 100, ErrorMessage = "Số lượng phải lớn hơn 0")]
         public int SoLuong { get; set; } = 1;
+        public int DiemHienCo { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "Số điểm muốn dùng không hợp lệ")]
+        public int DiemMuonDoi { get; set; }
     }
 }

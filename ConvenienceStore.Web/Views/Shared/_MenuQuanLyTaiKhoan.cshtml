@@ -1,5 +1,11 @@
-﻿@{
+﻿@using ConvenienceStore.Models.Entities
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<NguoiDung> UserManager
+@{
     var menu = ViewBag.MenuHienTai as string ?? "";
+    var nguoiDungHienTai = await UserManager.GetUserAsync(User);
+    var diemTichLuy = nguoiDungHienTai?.DiemTichLuy ?? 0;
+    var tienQuyDoi = diemTichLuy * 1000;
 }
 
 <div class="account-sidebar" width ="500px">
@@ -7,8 +13,21 @@
         <div class="account-avatar">
             <i class="fa-solid fa-user"></i>
         </div>
+
         <div class="account-user-name">@User.Identity?.Name</div>
         <div class="account-user-email">Tài khoản của bạn</div>
+
+        <div class="account-points-box mt-3">
+            <div class="account-points-label">
+                Điểm tích lũy hiện tại
+            </div>
+
+            <div class="account-points-value">
+                @diemTichLuy điểm
+            </div>
+
+            
+        </div>
     </div>
 
     <div class="account-menu">

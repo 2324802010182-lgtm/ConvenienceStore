@@ -44,7 +44,15 @@
                                                 <td>@item.HoTenNguoiNhan</td>
                                                 <td>@item.SoDienThoai</td>
                                                 <td>@item.NgayDatHang.ToString("dd/MM/yyyy")</td>
-                                                <td>@item.TongTien.ToString("#,##0") đ</td>
+                                                <td>
+                                                    @{
+                                                        var tongCanThanhToan = item.TienGiamTuDiem > 0
+                                                        ? item.TongTienSauGiam
+                                                        : item.TongTien;
+                                                    }
+
+                                                    @tongCanThanhToan.ToString("N0") đ
+                                                </td>
                                                 <td>@item.TrangThai</td>
                                                 <td>
                                                     <a asp-action="ChiTietDonHang" asp-route-id="@item.Id" class="soft-btn">

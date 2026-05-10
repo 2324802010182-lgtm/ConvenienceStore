@@ -2,16 +2,22 @@
 
 @{
     ViewData["Title"] = "Đặt hàng";
+
+    var tongTienBanDau = Model.Gia * Model.SoLuong;
+    var diemToiDaTheoTongTien = (int)Math.Floor(tongTienBanDau / 1000m);
+    var diemToiDaDuocDung = Math.Min(Model.DiemHienCo, diemToiDaTheoTongTien);
 }
 
 <div class="auth-page">
-    <div class="auth-card" style="max-width: 700px;">
+    <div class="auth-card" style="max-width: 760px;">
         <div class="auth-header">
             <h2>Đặt hàng</h2>
             <p>Vui lòng kiểm tra thông tin trước khi xác nhận đơn hàng</p>
         </div>
 
         <form asp-action="DatHang" method="post">
+            @Html.AntiForgeryToken()
+
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
             <input asp-for="SanPhamId" type="hidden" />
@@ -23,13 +29,91 @@
 
             <div class="mb-3">
                 <label class="form-label">Giá</label>
-                <input value="@Model.Gia.ToString("N0") đ" class="form-control auth-input" readonly />
+                <input value="@Model.Gia.ToString("N0") đ"
+                       class="form-control auth-input"
+                       readonly />
+
+                <input type="hidden"
+                       id="giaSanPham"
+                       value="@Model.Gia.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
             </div>
 
             <div class="mb-3">
                 <label asp-for="SoLuong" class="form-label">Số lượng</label>
-                <input asp-for="SoLuong" class="form-control auth-input" />
+                <input asp-for="SoLuong"
+                       id="soLuong"
+                       type="number"
+                       min="1"
+                       class="form-control auth-input" />
                 <span asp-validation-for="SoLuong" class="text-danger"></span>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Điểm tích lũy</h5>
+
+                    <div class="mb-2">
+                        Điểm hiện có:
+                        <strong>@Model.DiemHienCo điểm</strong>
+                    </div>
+
+                    <div class="mb-2">
+                        Có thể quy đổi:
+                        <strong>@((Model.DiemHienCo * 1000).ToString("N0")) đ</strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DiemMuonDoi" class="form-label">
+                            Số điểm muốn dùng
+                        </label>
+
+                        <input asp-for="DiemMuonDoi"
+                               name="DiemMuonDoi"
+                               id="diemMuonDoi"
+                               type="number"
+                               class="form-control auth-input"
+                               min="0"
+                               max="@diemToiDaDuocDung"
+                               data-diem-hien-co="@Model.DiemHienCo" />
+
+                        <span asp-validation-for="DiemMuonDoi" class="text-danger"></span>
+                    </div>
+
+                    <small class="text-muted">
+                        Quy đổi: 1 điểm = 1.000đ. Cứ 10.000đ thanh toán được cộng 1 điểm sau khi đơn đã giao.
+                    </small>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Tổng thanh toán</h5>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tổng tiền hàng</span>
+                        <strong id="tongTienHangText">
+                            @tongTienBanDau.ToString("N0") đ
+                        </strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Giảm từ điểm</span>
+                        <strong id="giamTuDiemText" class="text-danger">
+                            -0 đ
+                        </strong>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Cần thanh toán</span>
+                        <strong id="canThanhToanText"
+                                class="text-success"
+                                style="font-size:18px;">
+                            @tongTienBanDau.ToString("N0") đ
+                        </strong>
+                    </div>
+                </div>
             </div>
 
             <div class="mb-3">
@@ -46,15 +130,90 @@
 
             <div class="mb-4">
                 <label asp-for="DiaChiNhanHang" class="form-label">Địa chỉ nhận hàng</label>
-                <textarea asp-for="DiaChiNhanHang" class="form-control auth-input" rows="4"></textarea>
+                <textarea asp-for="DiaChiNhanHang"
+                          class="form-control auth-input"
+                          rows="4"></textarea>
                 <span asp-validation-for="DiaChiNhanHang" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn auth-btn w-100">Xác nhận đặt hàng</button>
+            <button type="submit" class="btn auth-btn w-100">
+                Xác nhận đặt hàng
+            </button>
         </form>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const giaSanPhamInput = document.getElementById("giaSanPham");
+            const soLuongInput = document.getElementById("soLuong");
+            const diemMuonDoiInput = document.getElementById("diemMuonDoi");
+
+            const tongTienHangText = document.getElementById("tongTienHangText");
+            const giamTuDiemText = document.getElementById("giamTuDiemText");
+            const canThanhToanText = document.getElementById("canThanhToanText");
+
+            if (!giaSanPhamInput || !soLuongInput || !diemMuonDoiInput) {
+                return;
+            }
+
+            const giaSanPham = Number(giaSanPhamInput.value || 0);
+            const diemHienCo = Number(diemMuonDoiInput.dataset.diemHienCo || 0);
+
+            function formatMoney(value) {
+                return Math.round(value).toLocaleString("vi-VN") + " đ";
+            }
+
+            function capNhatTongTien() {
+                let soLuong = Number(soLuongInput.value || 1);
+
+                if (isNaN(soLuong) || soLuong < 1) {
+                    soLuong = 1;
+                }
+
+                soLuongInput.value = soLuong;
+
+                const tongTien = giaSanPham * soLuong;
+
+                let diemToiDaTheoTongTien = Math.floor(tongTien / 1000);
+                let diemToiDaDuocDung = Math.min(diemHienCo, diemToiDaTheoTongTien);
+
+                let diemMuonDoi = Number(diemMuonDoiInput.value || 0);
+
+                if (isNaN(diemMuonDoi) || diemMuonDoi < 0) {
+                    diemMuonDoi = 0;
+                }
+
+                if (diemMuonDoi > diemToiDaDuocDung) {
+                    diemMuonDoi = diemToiDaDuocDung;
+                }
+
+                diemMuonDoiInput.value = diemMuonDoi;
+                diemMuonDoiInput.max = diemToiDaDuocDung;
+
+                let tienGiam = diemMuonDoi * 1000;
+
+                if (tienGiam > tongTien) {
+                    tienGiam = tongTien;
+                }
+
+                const canThanhToan = tongTien - tienGiam;
+
+                tongTienHangText.innerText = formatMoney(tongTien);
+                giamTuDiemText.innerText = "-" + formatMoney(tienGiam);
+                canThanhToanText.innerText = formatMoney(canThanhToan);
+            }
+
+            soLuongInput.addEventListener("input", capNhatTongTien);
+            soLuongInput.addEventListener("change", capNhatTongTien);
+
+            diemMuonDoiInput.addEventListener("input", capNhatTongTien);
+            diemMuonDoiInput.addEventListener("change", capNhatTongTien);
+
+            capNhatTongTien();
+        });
+    </script>
 }

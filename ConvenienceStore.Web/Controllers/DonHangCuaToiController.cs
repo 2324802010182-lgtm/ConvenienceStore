@@ -30,7 +30,12 @@ namespace ConvenienceStore.Web.Controllers
                 HoTenNguoiNhan = x.HoTenNguoiNhan,
                 EmailNguoiDat = x.NguoiDung != null ? x.NguoiDung.Email : "",
                 SoDienThoai = x.SoDienThoai,
+
                 TongTien = x.TongTien,
+                DiemDaSuDung = x.DiemDaSuDung,
+                TienGiamTuDiem = x.TienGiamTuDiem,
+                TongTienSauGiam = x.TongTienSauGiam,
+
                 NgayDatHang = x.NgayDatHang,
                 TrangThai = LayTenTrangThai(x.TrangThai)
             }).ToList();
@@ -45,6 +50,7 @@ namespace ConvenienceStore.Web.Controllers
                 return Challenge();
 
             var donHang = await _dichVuDonHang.LayChiTietAsync(id);
+            Console.WriteLine($"DEBUG DONHANG #{id}: Diem={donHang?.DiemDaSuDung}, Giam={donHang?.TienGiamTuDiem}, SauGiam={donHang?.TongTienSauGiam}");
             if (donHang == null || donHang.NguoiDungId != nguoiDungId)
                 return NotFound();
 
@@ -55,9 +61,15 @@ namespace ConvenienceStore.Web.Controllers
                 SoDienThoai = donHang.SoDienThoai,
                 DiaChiNhanHang = donHang.DiaChiNhanHang,
                 EmailNguoiDat = donHang.NguoiDung?.Email,
+
                 TongTien = donHang.TongTien,
+                DiemDaSuDung = donHang.DiemDaSuDung,
+                TienGiamTuDiem = donHang.TienGiamTuDiem,
+                TongTienSauGiam = donHang.TongTienSauGiam,
+
                 NgayDatHang = donHang.NgayDatHang,
                 TrangThai = LayTenTrangThai(donHang.TrangThai),
+
                 DanhSachSanPham = donHang.ChiTietDonHangs?.Select(ct => new ChiTietSanPhamTrongDonViewModel
                 {
                     TenSanPham = ct.SanPham != null ? ct.SanPham.TenSanPham : "",

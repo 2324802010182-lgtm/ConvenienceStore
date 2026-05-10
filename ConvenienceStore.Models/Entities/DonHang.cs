@@ -27,6 +27,14 @@ namespace ConvenienceStore.Models.Entities
         [Column(TypeName = "decimal(18,2)")]
         public decimal TongTien { get; set; }
 
+        public int DiemDaSuDung { get; set; } = 0;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TienGiamTuDiem { get; set; } = 0;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TongTienSauGiam { get; set; } = 0;
+
         public DateTime NgayDatHang { get; set; } = DateTime.Now;
 
         public TrangThaiDonHang TrangThai { get; set; } = TrangThaiDonHang.ChoXacNhan;

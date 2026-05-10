@@ -7,6 +7,7 @@
         public string? Email { get; set; }
         public string VaiTro { get; set; } = "Khách hàng";
         public bool BiKhoa { get; set; }
+        public int DiemTichLuy { get; set; } = 0;
         public DateTimeOffset? KhoaDenNgay { get; set; }
     }
 }

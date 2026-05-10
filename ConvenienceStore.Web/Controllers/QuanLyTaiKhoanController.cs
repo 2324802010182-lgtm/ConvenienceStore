@@ -36,6 +36,7 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var nguoiDung = await LayNguoiDungHienTaiAsync();
+
             if (nguoiDung == null)
                 return Challenge();
 
@@ -49,7 +50,7 @@ namespace ConvenienceStore.Web.Controllers
                     Id = x.Id,
                     NgayDat = x.NgayDatHang,
                     SoLuongSanPham = x.ChiTietDonHangs?.Sum(ct => ct.SoLuong) ?? 0,
-                    TongTien = x.TongTien,
+                    TongTien = x.TienGiamTuDiem > 0 ? x.TongTienSauGiam : x.TongTien,
                     TrangThai = LayTenTrangThai(x.TrangThai),
                     CssTrangThai = LayCssTrangThai(x.TrangThai)
                 })
@@ -70,6 +71,7 @@ namespace ConvenienceStore.Web.Controllers
             };
 
             ViewBag.MenuHienTai = "TongQuan";
+
             return View(model);
         }
 
@@ -77,6 +79,7 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> HoSo()
         {
             var nguoiDung = await LayNguoiDungHienTaiAsync();
+
             if (nguoiDung == null)
                 return Challenge();
 
@@ -89,6 +92,7 @@ namespace ConvenienceStore.Web.Controllers
             };
 
             ViewBag.MenuHienTai = "HoSo";
+
             return View(model);
         }
 
@@ -102,6 +106,7 @@ namespace ConvenienceStore.Web.Controllers
                 return View(model);
 
             var nguoiDung = await LayNguoiDungHienTaiAsync();
+
             if (nguoiDung == null)
                 return Challenge();
 
@@ -114,12 +119,15 @@ namespace ConvenienceStore.Web.Controllers
             if (!ketQua.Succeeded)
             {
                 foreach (var loi in ketQua.Errors)
+                {
                     ModelState.AddModelError("", loi.Description);
+                }
 
                 return View(model);
             }
 
             TempData["ThanhCong"] = "Cập nhật hồ sơ thành công.";
+
             return RedirectToAction(nameof(HoSo));
         }
 
@@ -127,6 +135,7 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> DonHang()
         {
             var nguoiDungId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (string.IsNullOrEmpty(nguoiDungId))
                 return Challenge();
 
@@ -140,13 +149,19 @@ namespace ConvenienceStore.Web.Controllers
                     HoTenNguoiNhan = x.HoTenNguoiNhan,
                     EmailNguoiDat = x.NguoiDung != null ? x.NguoiDung.Email : "",
                     SoDienThoai = x.SoDienThoai,
+
                     TongTien = x.TongTien,
+                    DiemDaSuDung = x.DiemDaSuDung,
+                    TienGiamTuDiem = x.TienGiamTuDiem,
+                    TongTienSauGiam = x.TongTienSauGiam,
+
                     NgayDatHang = x.NgayDatHang,
                     TrangThai = LayTenTrangThai(x.TrangThai)
                 })
                 .ToList();
 
             ViewBag.MenuHienTai = "DonHang";
+
             return View(model);
         }
 
@@ -154,10 +169,12 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> ChiTietDonHang(int id)
         {
             var nguoiDungId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (string.IsNullOrEmpty(nguoiDungId))
                 return Challenge();
 
             var donHang = await _dichVuDonHang.LayChiTietAsync(id);
+
             if (donHang == null || donHang.NguoiDungId != nguoiDungId)
                 return NotFound();
 
@@ -168,9 +185,15 @@ namespace ConvenienceStore.Web.Controllers
                 SoDienThoai = donHang.SoDienThoai,
                 DiaChiNhanHang = donHang.DiaChiNhanHang,
                 EmailNguoiDat = donHang.NguoiDung?.Email,
+
                 TongTien = donHang.TongTien,
+                DiemDaSuDung = donHang.DiemDaSuDung,
+                TienGiamTuDiem = donHang.TienGiamTuDiem,
+                TongTienSauGiam = donHang.TongTienSauGiam,
+
                 NgayDatHang = donHang.NgayDatHang,
                 TrangThai = LayTenTrangThai(donHang.TrangThai),
+
                 DanhSachSanPham = donHang.ChiTietDonHangs?.Select(ct => new ChiTietSanPhamTrongDonViewModel
                 {
                     TenSanPham = ct.SanPham != null ? ct.SanPham.TenSanPham : "",
@@ -182,6 +205,7 @@ namespace ConvenienceStore.Web.Controllers
             };
 
             ViewBag.MenuHienTai = "DonHang";
+
             return View(model);
         }
 
@@ -189,6 +213,7 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> DoiMatKhau()
         {
             var nguoiDung = await LayNguoiDungHienTaiAsync();
+
             if (nguoiDung == null)
                 return Challenge();
 
@@ -198,6 +223,7 @@ namespace ConvenienceStore.Web.Controllers
             };
 
             ViewBag.MenuHienTai = "DoiMatKhau";
+
             return View(model);
         }
 
@@ -206,6 +232,7 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> GuiLinkDoiMatKhau()
         {
             var nguoiDung = await LayNguoiDungHienTaiAsync();
+
             if (nguoiDung == null)
                 return Challenge();
 
@@ -236,6 +263,7 @@ namespace ConvenienceStore.Web.Controllers
                 noiDung);
 
             TempData["ThanhCong"] = "Đã gửi liên kết đổi mật khẩu về email của bạn.";
+
             return RedirectToAction(nameof(DoiMatKhau));
         }
 
@@ -244,6 +272,7 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> DangXuat()
         {
             await _signInManager.SignOutAsync();
+
             return RedirectToAction("Index", "Home");
         }
 

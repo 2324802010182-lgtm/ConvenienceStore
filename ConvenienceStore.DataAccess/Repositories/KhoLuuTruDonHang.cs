@@ -34,6 +34,8 @@ namespace ConvenienceStore.DataAccess.Repositories
         {
             return await _context.DonHangs
                 .Include(x => x.NguoiDung)
+                .Include(x => x.ChiTietDonHangs!)
+                    .ThenInclude(ct => ct.SanPham)
                 .Where(x => x.NguoiDungId == nguoiDungId)
                 .OrderByDescending(x => x.NgayDatHang)
                 .ToListAsync();

@@ -53,6 +53,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IDichVuDashboardAdmin, DichVuDashboardAdmin>();
 builder.Services.AddScoped<IDichVuDonHang, DichVuDonHang>();
 builder.Services.AddScoped<IDichVuThongKeBaoCao, DichVuThongKeBaoCao>();
+builder.Services.AddScoped<IDichVuDiemTichLuy, DichVuDiemTichLuy>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

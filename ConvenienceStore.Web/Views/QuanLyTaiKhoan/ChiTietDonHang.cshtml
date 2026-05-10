@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
+
+    var tongTienCanThanhToan = Model.TienGiamTuDiem > 0
+        ? Model.TongTienSauGiam
+        : Model.TongTien;
 }
 
 <div class="container py-4">
@@ -15,30 +19,63 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="fw-bold mb-0">Chi tiết đơn hàng #@Model.Id</h3>
-                        <a asp-action="DonHang" class="btn btn-outline-dark rounded-pill">Quay lại</a>
+
+                        <a asp-action="Index" class="btn btn-outline-dark rounded-pill">
+                            Quay lại
+                        </a>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <strong>Người nhận:</strong> @Model.HoTenNguoiNhan
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <strong>Số điện thoại:</strong> @Model.SoDienThoai
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <strong>Email:</strong> @Model.EmailNguoiDat
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <strong>Ngày đặt:</strong> @Model.NgayDatHang.ToString("dd/MM/yyyy HH:mm")
                         </div>
+
                         <div class="col-12 mb-3">
                             <strong>Địa chỉ nhận hàng:</strong> @Model.DiaChiNhanHang
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <strong>Trạng thái:</strong> @Model.TrangThai
                         </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <strong>Tổng tiền:</strong> @Model.TongTien.ToString("#,##0") đ
+                            <strong>Tổng tiền hàng:</strong>
+                            @Model.TongTien.ToString("N0") đ
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Điểm đã sử dụng:</strong>
+                            @Model.DiemDaSuDung điểm
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Giảm từ điểm:</strong>
+                            <span class="text-danger">
+                                -@Model.TienGiamTuDiem.ToString("N0") đ
+                            </span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Cần thanh toán:</strong>
+                            <span class="fw-bold text-success">
+                                @tongTienCanThanhToan.ToString("N0") đ
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -59,6 +96,7 @@
                                     <th>Thành tiền</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @foreach (var item in Model.DanhSachSanPham)
                                 {
@@ -77,14 +115,40 @@
                                                 </div>
                                             }
                                         </td>
+
                                         <td>@item.TenSanPham</td>
                                         <td>@item.SoLuong</td>
-                                        <td>@item.DonGia.ToString("#,##0") đ</td>
-                                        <td>@item.ThanhTien.ToString("#,##0") đ</td>
+                                        <td>@item.DonGia.ToString("N0") đ</td>
+                                        <td>@item.ThanhTien.ToString("N0") đ</td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <div style="min-width: 320px;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Tổng tiền hàng</span>
+                                <strong>@Model.TongTien.ToString("N0") đ</strong>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Giảm từ điểm</span>
+                                <strong class="text-danger">
+                                    -@Model.TienGiamTuDiem.ToString("N0") đ
+                                </strong>
+                            </div>
+
+                            <hr />
+
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold">Cần thanh toán</span>
+                                <strong class="text-success">
+                                    @tongTienCanThanhToan.ToString("N0") đ
+                                </strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

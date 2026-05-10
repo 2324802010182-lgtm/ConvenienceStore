@@ -15,12 +15,16 @@ namespace ConvenienceStore.Business.Interfaces
             int soLuong,
             string hoTenNguoiNhan,
             string soDienThoai,
-            string diaChiNhanHang);
+            string diaChiNhanHang,
+            int diemDaSuDung = 0,
+            decimal tienGiamTuDiem = 0);
         Task<int> TaoDonHangTuGioAsync(
             string nguoiDungId,
             List<SanPhamDatHang> danhSachSanPham,
             string hoTenNguoiNhan,
             string soDienThoai,
-            string diaChiNhanHang);
-    }
+            string diaChiNhanHang,
+            int diemDaSuDung = 0,
+            decimal tienGiamTuDiem = 0);
+      }
 }

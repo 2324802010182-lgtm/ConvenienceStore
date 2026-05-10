@@ -16,6 +16,7 @@ namespace ConvenienceStore.DataAccess
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public DbSet<DanhGiaSanPham> DanhGiaSanPhams { get; set; }
+        public DbSet<LichSuDiem> LichSuDiems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -30,7 +31,9 @@ namespace ConvenienceStore.DataAccess
                  .WithMany()
                  .HasForeignKey(x => x.SanPhamId)
                  .OnDelete(DeleteBehavior.Cascade);
-
+            modelBuilder.Entity<LichSuDiem>()
+                .Property(x => x.SoTienTuongUng)
+                .HasPrecision(18, 2);
             modelBuilder.Entity<DanhGiaSanPham>()
                 .HasOne(x => x.NguoiDung)
                 .WithMany()
@@ -41,7 +44,15 @@ namespace ConvenienceStore.DataAccess
                 .WithOne(sp => sp.DanhMuc)
                 .HasForeignKey(sp => sp.DanhMucId)
                 .OnDelete(DeleteBehavior.Restrict);
-
+            modelBuilder.Entity<DonHang>()
+                .Property(x => x.TienGiamTuDiem)
+                .HasPrecision(18, 2);
+            modelBuilder.Entity<DonHang>()
+                .Property(x => x.TongTien)
+                .HasPrecision(18, 2);
+            modelBuilder.Entity<DonHang>()
+                .Property(x => x.TongTienSauGiam)
+                .HasPrecision(18, 2);
             modelBuilder.Entity<DonHang>()
                 .HasMany(dh => dh.ChiTietDonHangs)
                 .WithOne(ct => ct.DonHang)

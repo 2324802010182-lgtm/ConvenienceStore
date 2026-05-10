@@ -12,12 +12,18 @@ namespace ConvenienceStore.Web.Controllers
     {
         private readonly IDichVuSanPham _dichVuSanPham;
         private readonly IDichVuDonHang _dichVuDonHang;
+        private readonly IDichVuDiemTichLuy _dichVuDiemTichLuy;
+
         private const string TenSessionGioHang = "GIO_HANG";
 
-        public GioHangController(IDichVuSanPham dichVuSanPham, IDichVuDonHang dichVuDonHang)
+        public GioHangController(
+            IDichVuSanPham dichVuSanPham,
+            IDichVuDonHang dichVuDonHang,
+            IDichVuDiemTichLuy dichVuDiemTichLuy)
         {
             _dichVuSanPham = dichVuSanPham;
             _dichVuDonHang = dichVuDonHang;
+            _dichVuDiemTichLuy = dichVuDiemTichLuy;
         }
 
         public IActionResult Index()
@@ -30,10 +36,12 @@ namespace ConvenienceStore.Web.Controllers
         public async Task<IActionResult> ThemVaoGio(int sanPhamId, int soLuong = 1)
         {
             var sanPham = await _dichVuSanPham.LayTheoIdAsync(sanPhamId);
+
             if (sanPham == null)
                 return NotFound();
 
             var gioHang = LayGioHang();
+
             var itemDaCo = gioHang.FirstOrDefault(x => x.SanPhamId == sanPhamId);
 
             if (itemDaCo == null)
@@ -51,12 +59,15 @@ namespace ConvenienceStore.Web.Controllers
             else
             {
                 itemDaCo.SoLuong += soLuong;
+
                 if (itemDaCo.SoLuong > sanPham.SoLuongTon)
                     itemDaCo.SoLuong = sanPham.SoLuongTon;
             }
 
             LuuGioHang(gioHang);
+
             TempData["ThanhCong"] = "Đã thêm sản phẩm vào giỏ hàng.";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -64,6 +75,7 @@ namespace ConvenienceStore.Web.Controllers
         public IActionResult CapNhatSoLuong(int sanPhamId, int soLuong)
         {
             var gioHang = LayGioHang();
+
             var item = gioHang.FirstOrDefault(x => x.SanPhamId == sanPhamId);
 
             if (item != null)
@@ -87,6 +99,7 @@ namespace ConvenienceStore.Web.Controllers
         public IActionResult XoaKhoiGio(int sanPhamId)
         {
             var gioHang = LayGioHang();
+
             var item = gioHang.FirstOrDefault(x => x.SanPhamId == sanPhamId);
 
             if (item != null)
@@ -100,7 +113,7 @@ namespace ConvenienceStore.Web.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult DatHangTuGio()
+        public async Task<IActionResult> DatHangTuGio()
         {
             var gioHang = LayGioHang();
 
@@ -110,9 +123,18 @@ namespace ConvenienceStore.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            var nguoiDungId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(nguoiDungId))
+                return Challenge();
+
+            var diemHienCo = await _dichVuDiemTichLuy.LayDiemHienCoAsync(nguoiDungId);
+
             var model = new DatHangTuGioViewModel
             {
-                DanhSachSanPham = gioHang
+                DanhSachSanPham = gioHang,
+                DiemHienCo = diemHienCo,
+                DiemMuonDoi = 0
             };
 
             return View(model);
@@ -120,6 +142,7 @@ namespace ConvenienceStore.Web.Controllers
 
         [Authorize]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DatHangTuGio(DatHangTuGioViewModel model)
         {
             var gioHang = LayGioHang();
@@ -132,12 +155,42 @@ namespace ConvenienceStore.Web.Controllers
 
             model.DanhSachSanPham = gioHang;
 
-            if (!ModelState.IsValid)
-                return View(model);
-
             var nguoiDungId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (string.IsNullOrEmpty(nguoiDungId))
                 return Challenge();
+
+            var diemHienCo = await _dichVuDiemTichLuy.LayDiemHienCoAsync(nguoiDungId);
+            model.DiemHienCo = diemHienCo;
+
+            var tongTien = gioHang.Sum(x => x.ThanhTien);
+
+            var diemToiDaTheoTongTien = (int)Math.Floor(tongTien / 1000m);
+            var diemToiDaDuocDung = Math.Min(diemHienCo, diemToiDaTheoTongTien);
+
+            if (model.DiemMuonDoi < 0)
+            {
+                model.DiemMuonDoi = 0;
+            }
+
+            if (model.DiemMuonDoi > diemToiDaDuocDung)
+            {
+                model.DiemMuonDoi = diemToiDaDuocDung;
+            }
+
+            var tienGiamTuDiem = model.DiemMuonDoi * 1000m;
+
+            if (tienGiamTuDiem > tongTien)
+            {
+                tienGiamTuDiem = tongTien;
+            }
+
+            var tongTienSauGiam = tongTien - tienGiamTuDiem;
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
             try
             {
@@ -152,7 +205,20 @@ namespace ConvenienceStore.Web.Controllers
                     danhSachSanPham,
                     model.HoTenNguoiNhan,
                     model.SoDienThoai,
-                    model.DiaChiNhanHang);
+                    model.DiaChiNhanHang,
+                    model.DiemMuonDoi,
+                    tienGiamTuDiem);
+
+                if (model.DiemMuonDoi > 0)
+                {
+                    await _dichVuDiemTichLuy.DoiDiemAsync(
+                        nguoiDungId,
+                        donHangId,
+                        model.DiemMuonDoi);
+                }
+
+                // Không cộng điểm ở đây.
+                // Điểm chỉ nên cộng khi admin/nhân viên chuyển đơn sang trạng thái Đã giao.
 
                 XoaToanBoGioHang();
 
@@ -180,7 +246,8 @@ namespace ConvenienceStore.Web.Controllers
             if (string.IsNullOrEmpty(duLieu))
                 return new List<GioHangItemViewModel>();
 
-            return JsonSerializer.Deserialize<List<GioHangItemViewModel>>(duLieu) ?? new List<GioHangItemViewModel>();
+            return JsonSerializer.Deserialize<List<GioHangItemViewModel>>(duLieu)
+                ?? new List<GioHangItemViewModel>();
         }
 
         private void LuuGioHang(List<GioHangItemViewModel> gioHang)
