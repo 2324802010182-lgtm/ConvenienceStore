@@ -32,6 +32,16 @@ namespace ConvenienceStore.DataAccess.Repositories
 
         public void Sua(T entity)
         {
+            var trackedEntity = _context.ChangeTracker.Entries<T>()
+                .FirstOrDefault(e => EqualityComparer<object>.Default.Equals(
+                    EF.Property<object>(e.Entity, "Id"),
+                    EF.Property<object>(entity, "Id")));
+
+            if (trackedEntity != null)
+            {
+                trackedEntity.State = EntityState.Detached;
+            }
+
             _dbSet.Update(entity);
         }
 

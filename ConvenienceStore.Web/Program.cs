@@ -1,18 +1,19 @@
 using ConvenienceStore.Business.Interfaces;
+using ConvenienceStore.Business.Interfaces;
+using ConvenienceStore.Business.Services;
 using ConvenienceStore.Business.Services;
 using ConvenienceStore.DataAccess;
 using ConvenienceStore.DataAccess.UnitOfWork;
 using ConvenienceStore.Models.Entities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using ConvenienceStore.Web.Services;
-using ConvenienceStore.Web.ViewModels;
-using ConvenienceStore.Web.DuLieuKhoiTao;
 using ConvenienceStore.Models.Entities;
 using ConvenienceStore.Models.HangSo;
+using ConvenienceStore.Web.DuLieuKhoiTao;
+using ConvenienceStore.Web.Hubs;
+using ConvenienceStore.Web.Services;
+using ConvenienceStore.Web.ViewModels;
 using Microsoft.AspNetCore.Identity;
-using ConvenienceStore.Business.Interfaces;
-using ConvenienceStore.Business.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Ket noi database
@@ -41,6 +42,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // DI
+builder.Services.AddSignalR();
+builder.Services.AddSignalR();
 builder.Services.AddScoped<IDonViCongViec, DonViCongViec>();
 builder.Services.AddScoped<IDichVuDanhMuc, DichVuDanhMuc>();
 builder.Services.AddScoped<IDichVuSanPham, DichVuSanPham>();
@@ -95,7 +98,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
+app.MapHub<ConvenienceStore.Web.Hubs.ChatOnlineHub>("/chatOnlineHub");
+app.MapHub<GopYChatHub>("/gopyChatHub");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSession();

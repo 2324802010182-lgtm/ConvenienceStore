@@ -98,6 +98,7 @@ namespace ConvenienceStore.Web.Controllers
 
         [Authorize(Roles = VaiTro.Admin + "," + VaiTro.NhanVien)]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChinhSua(SanPhamViewModel model)
         {
             if (!ModelState.IsValid)
@@ -105,10 +106,6 @@ namespace ConvenienceStore.Web.Controllers
                 model.DanhSachDanhMuc = await LayDanhSachDanhMucAsync();
                 return View(model);
             }
-
-            var sanPhamCu = await _dichVuSanPham.LayTheoIdAsync(model.Id);
-            if (sanPhamCu == null)
-                return NotFound();
 
             var sanPham = new SanPham
             {
@@ -118,16 +115,13 @@ namespace ConvenienceStore.Web.Controllers
                 Gia = model.Gia,
                 SoLuongTon = model.SoLuongTon,
                 HinhAnh = model.HinhAnh,
-                TrangThai = model.TrangThai,
                 DanhMucId = model.DanhMucId,
-
-                // Giữ nguyên dữ liệu khuyến mãi cũ
-                PhanTramGiam = sanPhamCu.PhanTramGiam,
-                NgayBatDauKhuyenMai = sanPhamCu.NgayBatDauKhuyenMai,
-                NgayKetThucKhuyenMai = sanPhamCu.NgayKetThucKhuyenMai
+                TrangThai = model.TrangThai
             };
 
             await _dichVuSanPham.CapNhatAsync(sanPham);
+
+            TempData["ThanhCong"] = "Cập nhật sản phẩm thành công.";
             return RedirectToAction(nameof(Index));
         }
 

@@ -1,0 +1,179 @@
+﻿@using System.Security.Claims
+@model ConvenienceStore.Web.ViewModels.ChiTietChatViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết chat online";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var nguoiDangNhapId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var danhSachTinNhan = Model.DanhSachTinNhan?.OrderBy(x => x.NgayGui).ToList() ?? new List<ConvenienceStore.Models.Entities.TinNhanChat>();
+    var tongTinNhan = danhSachTinNhan.Count;
+}
+
+<div class="admin-chat-page">
+    <div class="admin-chat-wrapper">
+        <div class="admin-chat-card">
+
+            <!-- HEADER -->
+            <div class="admin-chat-header">
+                <div class="admin-chat-header-left">
+                    <div class="admin-chat-avatar-icon">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <div>
+                        <h2 class="admin-chat-title">Phòng chat hỗ trợ</h2>
+                        <p class="admin-chat-subtitle">Trao đổi trực tiếp giữa khách hàng và cửa hàng</p>
+                    </div>
+                </div>
+
+                <div class="admin-chat-header-right">
+                    <span class="admin-chat-badge">@tongTinNhan tin nhắn</span>
+                </div>
+            </div>
+
+            <!-- THÔNG TIN HỘI THOẠI -->
+            <div class="admin-chat-info-grid">
+                <div class="admin-chat-info-box">
+                    <h4><i class="fa-solid fa-circle-info"></i> Thông tin hội thoại</h4>
+                    <ul class="admin-chat-info-list">
+                        <li><strong>Mã hội thoại:</strong> #@Model.HoiThoai.Id</li>
+                        <li><strong>Tiêu đề:</strong> @Model.HoiThoai.TieuDe</li>
+                        <li><strong>Khách hàng:</strong> @(Model.HoiThoai.KhachHang?.HoTen ?? "Khách hàng")</li>
+                        <li><strong>Trạng thái:</strong> @Model.HoiThoai.TrangThai.ToString()
+                        <li><strong>Phụ trách:</strong> @(Model.HoiThoai.NhanVienPhuTrach?.HoTen ?? "Chưa phân công")</li>
+                    </ul>
+                </div>
+
+                <div class="admin-chat-info-box">
+                    <h4><i class="fa-solid fa-headset"></i> Hướng dẫn</h4>
+                    <ul class="admin-chat-guide-list">
+                        <li>Admin/Nhân viên có thể phản hồi trực tiếp với khách hàng.</li>
+                        <li>Tin nhắn mới sẽ hiển thị rõ ràng theo từng bên gửi.</li>
+                        <li>Có thể gửi kèm hình ảnh trong quá trình hỗ trợ.</li>
+                        <li>Khung chat được thiết kế giống giao diện chat của khách hàng.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- KHUNG TIN NHẮN -->
+            <div class="admin-chat-body" id="adminChatBody">
+                @if (danhSachTinNhan.Any())
+                {
+                    string? ngayHienTai = null;
+
+                    foreach (var tinNhan in danhSachTinNhan)
+                    {
+                        var laTinCuaAdmin = tinNhan.NguoiGuiId == nguoiDangNhapId;
+                        var tenNguoiGui = tinNhan.NguoiGui?.HoTen ?? "Người dùng";
+                        var vaiTroNguoiGui = laTinCuaAdmin ? "Hỗ trợ viên" : "Khách hàng";
+                        var ngayGui = tinNhan.NgayGui.ToString("dd/MM/yyyy");
+                        var gioGui = tinNhan.NgayGui.ToString("HH:mm");
+
+                        if (ngayHienTai != ngayGui)
+                        {
+                            ngayHienTai = ngayGui;
+                            <div class="admin-chat-day-divider">
+                                <span>@ngayGui</span>
+                            </div>
+                        }
+
+                        <div class="admin-chat-row @(laTinCuaAdmin ? "mine" : "other")">
+                            <div class="admin-chat-bubble">
+                                <div class="admin-chat-bubble-top">
+                                    <div class="admin-chat-user">
+                                        <div class="admin-chat-user-name">@tenNguoiGui</div>
+                                        <div class="admin-chat-user-role">@vaiTroNguoiGui</div>
+                                    </div>
+                                    <div class="admin-chat-time">@gioGui</div>
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(tinNhan.NoiDung))
+                                {
+                                    <div class="admin-chat-message-text">
+                                        @tinNhan.NoiDung
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(tinNhan.HinhAnh))
+                                {
+                                    <div class="admin-chat-image-wrap">
+                                        <a href="@tinNhan.HinhAnh" target="_blank">
+                                            <img src="@tinNhan.HinhAnh" alt="Ảnh chat" class="admin-chat-image" />
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="admin-chat-empty">
+                        <i class="fa-regular fa-message"></i>
+                        <p>Chưa có tin nhắn nào trong hội thoại này.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- FORM GỬI TIN NHẮN -->
+            <div class="admin-chat-form-wrap">
+                <form asp-controller="QuanLyChat"
+                      asp-action="GuiTinNhan"
+                      method="post"
+                      enctype="multipart/form-data"
+                      class="admin-chat-form">
+
+                    <input type="hidden" name="hoiThoaiId" value="@Model.HoiThoai.Id" />
+
+                    <div class="admin-chat-input-group">
+                        <textarea name="noiDung"
+                                  class="admin-chat-textarea"
+                                  rows="3"
+                                  placeholder="Nhập nội dung phản hồi cho khách hàng..."></textarea>
+                    </div>
+
+                    <div class="admin-chat-form-bottom">
+                        <div class="admin-chat-file-box">
+                            <label for="tepHinhAnh" class="admin-chat-file-label">
+                                <i class="fa-regular fa-image"></i>
+                                <span>Chọn ảnh</span>
+                            </label>
+                            <input type="file" id="tepHinhAnh" name="tepHinhAnh" accept="image/*" hidden />
+                            <span id="tenFileDaChon" class="admin-chat-file-name">Chưa chọn ảnh</span>
+                        </div>
+
+                        <button type="submit" class="admin-chat-send-btn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Gửi</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Hiển thị tên file ảnh đã chọn
+        const tepHinhAnh = document.getElementById("tepHinhAnh");
+        const tenFileDaChon = document.getElementById("tenFileDaChon");
+
+        if (tepHinhAnh && tenFileDaChon) {
+            tepHinhAnh.addEventListener("change", function () {
+                if (this.files.length > 0) {
+                    tenFileDaChon.textContent = this.files[0].name;
+                } else {
+                    tenFileDaChon.textContent = "Chưa chọn ảnh";
+                }
+            });
+        }
+
+        // Tự cuộn xuống cuối khung chat
+        const adminChatBody = document.getElementById("adminChatBody");
+        if (adminChatBody) {
+            adminChatBody.scrollTop = adminChatBody.scrollHeight;
+        }
+    </script>
+}

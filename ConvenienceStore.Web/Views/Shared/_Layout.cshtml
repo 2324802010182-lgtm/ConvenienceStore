@@ -26,19 +26,25 @@
                 </div>
             </div>
         </div>
-
+        <a asp-controller="ChatOnline" asp-action="Index" class="chat-online-float-btn">
+            <i class="fa-solid fa-headset"></i> Chat online
+        </a>
         <div class="header-center">
             <form asp-controller="SanPhamKhach" asp-action="TimKiem" method="get" class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" name="tuKhoa" placeholder="Tìm gì cũng có, mở cửa 24 giờ, giao hàng 24 phút" />
             </form>
         </div>
-
+        <a asp-controller="GopY" asp-action="CuaToi" class="feedback-history-btn">
+            <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử góp ý
+        </a>
         <div class="header-right">
             <a href="/GioHang" class="account-btn" title="Giỏ hàng">
                 <i class="fa-solid fa-cart-shopping"></i>
             </a>
-
+            <a asp-controller="GopY" asp-action="Tao" class="feedback-float-btn">
+                <i class="fa-solid fa-comments"></i> Góp ý
+            </a>
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="account-btn" title="Tài khoản của tôi">

@@ -1,0 +1,81 @@
+﻿@model IEnumerable<ConvenienceStore.Models.Entities.GopY>
+@using ConvenienceStore.Models.Enums
+
+@{
+    ViewData["Title"] = "Quản lý góp ý";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="admin-form-card">
+    <div class="admin-page-header mb-4">
+        <div>
+            <h2>Quản lý góp ý</h2>
+            <p>Danh sách góp ý từ khách hàng</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table admin-table">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Loại góp ý</th>
+                    <th>Người gửi</th>
+                    <th>Tiêu đề</th>
+                    <th>Đối tượng</th>
+                    <th>Ngày tạo</th>
+                    <th>Số tin nhắn</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>#@item.Id</td>
+                            <td>
+                                @if (item.LoaiGopY == LoaiGopY.SanPham)
+                                {
+                                    <span class="badge bg-success">Sản phẩm</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Nhân viên</span>
+                                }
+                            </td>
+                            <td>@(item.NguoiGui?.HoTen ?? item.NguoiGui?.Email)</td>
+                            <td>@item.TieuDe</td>
+                            <td>
+                                @if (item.LoaiGopY == LoaiGopY.SanPham)
+                                {
+                                    @(item.SanPham?.TenSanPham ?? "Không có sản phẩm")
+                                }
+                                else
+                                {
+                                    @(item.NhanVien != null
+                                                            ? $"{item.NhanVien.MaNhanVien} - {item.NhanVien.HoTen}"
+                                                            : "Không có nhân viên")
+                                                }
+                            </td>
+                            <td>@item.NgayTao.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@(item.TinNhans?.Count ?? 0)</td>
+                            <td>
+                                <a asp-action="ChiTiet" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                    Xem chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Chưa có góp ý nào.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

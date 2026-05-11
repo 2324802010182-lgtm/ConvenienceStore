@@ -4,6 +4,7 @@ using ConvenienceStore.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ConvenienceStore.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510084445_AddMaNhanVienToNguoiDung")]
+    partial class AddMaNhanVienToNguoiDung
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -168,98 +171,6 @@ namespace ConvenienceStore.DataAccess.Migrations
                     b.HasIndex("NguoiDungId");
 
                     b.ToTable("DonHangs", (string)null);
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.GopY", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("DaDong")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("LoaiGopY")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("NgayTao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NguoiGuiId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("NhanVienId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("NoiDung")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<int?>("SanPhamId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TieuDe")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NguoiGuiId");
-
-                    b.HasIndex("NhanVienId");
-
-                    b.HasIndex("SanPhamId");
-
-                    b.ToTable("GopYs", (string)null);
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.HoiThoaiChat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("KhachHangDaDoc")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("KhachHangId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("LanHoatDongCuoi")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("NgayTao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NhanVienPhuTrachId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("QuanTriDaDoc")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("TieuDe")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("TrangThai")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("KhachHangId");
-
-                    b.HasIndex("NhanVienPhuTrachId");
-
-                    b.ToTable("HoiThoaiChats", (string)null);
                 });
 
             modelBuilder.Entity("ConvenienceStore.Models.Entities.LichSuDiem", b =>
@@ -423,74 +334,6 @@ namespace ConvenienceStore.DataAccess.Migrations
                     b.HasIndex("DanhMucId");
 
                     b.ToTable("SanPhams", (string)null);
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.TinNhanChat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("HinhAnh")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("HoiThoaiChatId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("NgayGui")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NguoiGuiId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("NoiDung")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HoiThoaiChatId");
-
-                    b.HasIndex("NguoiGuiId");
-
-                    b.ToTable("TinNhanChats", (string)null);
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.TinNhanGopY", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("GopYId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("HinhAnh")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("NgayGui")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NguoiGuiId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("NoiDung")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GopYId");
-
-                    b.HasIndex("NguoiGuiId");
-
-                    b.ToTable("TinNhanGopYs", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -675,49 +518,6 @@ namespace ConvenienceStore.DataAccess.Migrations
                     b.Navigation("NguoiDung");
                 });
 
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.GopY", b =>
-                {
-                    b.HasOne("ConvenienceStore.Models.Entities.NguoiDung", "NguoiGui")
-                        .WithMany()
-                        .HasForeignKey("NguoiGuiId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ConvenienceStore.Models.Entities.NguoiDung", "NhanVien")
-                        .WithMany()
-                        .HasForeignKey("NhanVienId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ConvenienceStore.Models.Entities.SanPham", "SanPham")
-                        .WithMany()
-                        .HasForeignKey("SanPhamId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("NguoiGui");
-
-                    b.Navigation("NhanVien");
-
-                    b.Navigation("SanPham");
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.HoiThoaiChat", b =>
-                {
-                    b.HasOne("ConvenienceStore.Models.Entities.NguoiDung", "KhachHang")
-                        .WithMany()
-                        .HasForeignKey("KhachHangId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ConvenienceStore.Models.Entities.NguoiDung", "NhanVienPhuTrach")
-                        .WithMany()
-                        .HasForeignKey("NhanVienPhuTrachId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("KhachHang");
-
-                    b.Navigation("NhanVienPhuTrach");
-                });
-
             modelBuilder.Entity("ConvenienceStore.Models.Entities.SanPham", b =>
                 {
                     b.HasOne("ConvenienceStore.Models.Entities.DanhMuc", "DanhMuc")
@@ -727,44 +527,6 @@ namespace ConvenienceStore.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("DanhMuc");
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.TinNhanChat", b =>
-                {
-                    b.HasOne("ConvenienceStore.Models.Entities.HoiThoaiChat", "HoiThoaiChat")
-                        .WithMany("TinNhans")
-                        .HasForeignKey("HoiThoaiChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ConvenienceStore.Models.Entities.NguoiDung", "NguoiGui")
-                        .WithMany()
-                        .HasForeignKey("NguoiGuiId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("HoiThoaiChat");
-
-                    b.Navigation("NguoiGui");
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.TinNhanGopY", b =>
-                {
-                    b.HasOne("ConvenienceStore.Models.Entities.GopY", "GopY")
-                        .WithMany("TinNhans")
-                        .HasForeignKey("GopYId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ConvenienceStore.Models.Entities.NguoiDung", "NguoiGui")
-                        .WithMany()
-                        .HasForeignKey("NguoiGuiId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("GopY");
-
-                    b.Navigation("NguoiGui");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -826,16 +588,6 @@ namespace ConvenienceStore.DataAccess.Migrations
             modelBuilder.Entity("ConvenienceStore.Models.Entities.DonHang", b =>
                 {
                     b.Navigation("ChiTietDonHangs");
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.GopY", b =>
-                {
-                    b.Navigation("TinNhans");
-                });
-
-            modelBuilder.Entity("ConvenienceStore.Models.Entities.HoiThoaiChat", b =>
-                {
-                    b.Navigation("TinNhans");
                 });
 #pragma warning restore 612, 618
         }

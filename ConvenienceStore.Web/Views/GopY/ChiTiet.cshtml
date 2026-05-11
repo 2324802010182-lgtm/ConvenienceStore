@@ -1,0 +1,120 @@
+﻿@model ConvenienceStore.Models.Entities.GopY
+@using ConvenienceStore.Models.Enums
+
+@{
+    ViewData["Title"] = "Chi tiết góp ý";
+}
+
+<div class="container py-4">
+    <div class="admin-form-card mb-4">
+        <div class="admin-page-header mb-4">
+            <div>
+                <h2>Chi tiết góp ý</h2>
+                <p>Theo dõi góp ý và lịch sử phản hồi</p>
+            </div>
+        </div>
+
+        @if (TempData["ThanhCong"] != null)
+        {
+            <div class="alert alert-success">@TempData["ThanhCong"]</div>
+        }
+
+        @if (TempData["Loi"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Loi"]</div>
+        }
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <div class="mb-2"><strong>Mã góp ý:</strong> #@Model.Id</div>
+                    <div class="mb-2"><strong>Người gửi:</strong> @(Model.NguoiGui?.HoTen ?? Model.NguoiGui?.Email ?? "Khách hàng")</div>
+                    <div class="mb-2">
+                        <strong>Loại góp ý:</strong>
+                        @if (Model.LoaiGopY == LoaiGopY.SanPham)
+                        {
+                            <span class="badge bg-success">Góp ý sản phẩm</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Góp ý nhân viên</span>
+                        }
+                    </div>
+                    <div class="mb-2"><strong>Tiêu đề:</strong> @Model.TieuDe</div>
+                    <div class="mb-2"><strong>Ngày tạo:</strong> @Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</div>
+
+                    @if (Model.LoaiGopY == LoaiGopY.SanPham && Model.SanPham != null)
+                    {
+                        <div class="mb-2"><strong>Sản phẩm:</strong> @Model.SanPham.TenSanPham</div>
+                    }
+
+                    @if (Model.LoaiGopY == LoaiGopY.NhanVien && Model.NhanVien != null)
+                    {
+                        <div class="mb-2"><strong>Nhân viên:</strong> @Model.NhanVien.MaNhanVien - @Model.NhanVien.HoTen</div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                    <strong>Nội dung ban đầu:</strong>
+                    <div class="mt-2 p-3 bg-light rounded">
+                        @Model.NoiDung
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-form-card mb-4">
+        <h4 class="mb-3">Lịch sử trao đổi</h4>
+
+        @if (Model.TinNhans != null && Model.TinNhans.Any())
+        {
+            @foreach (var tinNhan in Model.TinNhans.OrderBy(x => x.NgayGui))
+            {
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
+                        <strong>@(tinNhan.NguoiGui?.HoTen ?? tinNhan.NguoiGui?.Email ?? "Người dùng")</strong>
+                        <small class="text-muted">@tinNhan.NgayGui.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(tinNhan.NoiDung))
+                    {
+                        <div class="mb-2">@tinNhan.NoiDung</div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(tinNhan.HinhAnh))
+                    {
+                        <img src="@tinNhan.HinhAnh"
+                             alt="Hình ảnh đính kèm"
+                             style="max-width:220px; border-radius:12px; object-fit:cover;" />
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-muted">Chưa có lịch sử trao đổi nào.</div>
+        }
+    </div>
+
+    <div class="admin-form-card">
+        <h4 class="mb-3">Phản hồi thêm</h4>
+
+        <form asp-action="GuiPhanHoi" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="gopYId" value="@Model.Id" />
+
+            <div class="mb-3">
+                <label class="form-label">Nội dung phản hồi</label>
+                <textarea name="noiDung" class="form-control admin-input" rows="4" placeholder="Nhập phản hồi thêm..."></textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn auth-btn">Gửi phản hồi</button>
+                <a asp-controller="Home" asp-action="Index" class="btn admin-secondary-btn">Về trang chủ</a>
+            </div>
+        </form>
+    </div>
+</div>

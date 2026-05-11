@@ -1,0 +1,216 @@
+﻿@using System.Security.Claims
+@using ConvenienceStore.Models.Entities
+@model HoiThoaiChat
+
+@{
+    ViewData["Title"] = "Chat online hỗ trợ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var nguoiDungId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    var danhSachTinNhan = Model.TinNhans != null
+        ? Model.TinNhans.OrderBy(x => x.NgayGui).ToList()
+        : new List<TinNhanChat>();
+
+    DateTime? ngayTruoc = null;
+}
+
+<div class="container py-4">
+    <div class="support-chat-page">
+
+        <!-- Tiêu đề -->
+        <div class="support-chat-hero mb-4">
+            <div>
+                <h1 class="support-chat-title">Chat online hỗ trợ</h1>
+                <p class="support-chat-desc">
+                    Trao đổi trực tiếp với nhân viên hoặc quản trị viên một cách nhanh chóng, rõ ràng và tiện lợi.
+                </p>
+            </div>
+        </div>
+
+        <!-- Khối thông tin trên -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-5">
+                <div class="support-card info-card h-100">
+                    <div class="support-card-header">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Thông tin hội thoại</span>
+                    </div>
+
+                    <div class="support-info-list">
+                        <div class="support-info-item">
+                            <span class="label">Mã hội thoại</span>
+                            <span class="value">#@Model.Id</span>
+                        </div>
+
+                        <div class="support-info-item">
+                            <span class="label">Tiêu đề</span>
+                            <span class="value">@Model.TieuDe</span>
+                        </div>
+
+                        <div class="support-info-item">
+                            <span class="label">Trạng thái</span>
+                            <span class="status-badge">Đang trao đổi</span>
+                        </div>
+
+                        <div class="support-info-item">
+                            <span class="label">Nhân viên phụ trách</span>
+                            <span class="value">
+                                @(Model.NhanVienPhuTrach != null ? Model.NhanVienPhuTrach.HoTen : "Quản trị hệ thống")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="support-card guide-card h-100">
+                    <div class="support-card-header">
+                        <i class="fa-solid fa-headset"></i>
+                        <span>Hướng dẫn</span>
+                    </div>
+
+                    <ul class="support-guide-list">
+                        <li>Khách hàng có thể nhắn trực tiếp với cửa hàng.</li>
+                        <li>Khi nhân viên/Admin trả lời, tin nhắn sẽ hiển thị ngay.</li>
+                        <li>Ảnh gửi kèm sẽ hiển thị trong cuộc trò chuyện.</li>
+                        <li>Không cần tải lại trang để xem tin nhắn mới.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khung chat -->
+        <div class="support-chat-box">
+            <div class="support-chat-box-header">
+                <div class="left">
+                    <div class="chat-icon-circle">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Phòng chat hỗ trợ</h5>
+                        <p class="mb-0">Lịch sử trò chuyện giữa bạn và cửa hàng</p>
+                    </div>
+                </div>
+                <div class="right">
+                    <span class="message-count">@danhSachTinNhan.Count tin nhắn</span>
+                </div>
+            </div>
+
+            <div class="support-chat-body" id="chatMessages">
+                @if (!danhSachTinNhan.Any())
+                {
+                    <div class="chat-empty-box">
+                        <i class="fa-regular fa-message"></i>
+                        <p>Chưa có tin nhắn nào. Hãy bắt đầu trò chuyện với cửa hàng.</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var tinNhan in danhSachTinNhan)
+                    {
+                        var laCuaToi = tinNhan.NguoiGuiId == nguoiDungId;
+                        var ngayHienTai = tinNhan.NgayGui.Date;
+
+                        if (ngayTruoc == null || ngayTruoc.Value.Date != ngayHienTai)
+                        {
+                            <div class="chat-day-divider">
+                                <span>@tinNhan.NgayGui.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        }
+
+                        var tenNguoiGui = laCuaToi
+                        ? "Bạn"
+                        : (tinNhan.NguoiGui != null ? tinNhan.NguoiGui.HoTen : "Hỗ trợ viên");
+
+                        var vaiTro = laCuaToi ? "Khách hàng" : "Hỗ trợ viên";
+
+                        <div class="chat-row @(laCuaToi ? "chat-row-me" : "chat-row-other")">
+                            <div class="chat-bubble @(laCuaToi ? "chat-bubble-me" : "chat-bubble-other")">
+                                <div class="chat-bubble-head">
+                                    <div class="chat-user-meta">
+                                        <div class="chat-user-name">@tenNguoiGui</div>
+                                        <div class="chat-user-role">@vaiTro</div>
+                                    </div>
+                                    <div class="chat-time">
+                                        @tinNhan.NgayGui.ToString("HH:mm")
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(tinNhan.NoiDung))
+                                {
+                                    <div class="chat-message-content">
+                                        @tinNhan.NoiDung
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(tinNhan.HinhAnh))
+                                {
+                                    <div class="chat-image-box">
+                                        <a href="@tinNhan.HinhAnh" target="_blank">
+                                            <img src="@tinNhan.HinhAnh" alt="Hình ảnh gửi kèm" class="chat-image-preview" />
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        ngayTruoc = ngayHienTai;
+                    }
+                }
+            </div>
+
+            <!-- Form gửi -->
+            <div class="support-chat-footer">
+                <form asp-controller="ChatOnline" asp-action="GuiTinNhan" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="hoiThoaiId" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <textarea name="noiDung" class="form-control support-chat-textarea" rows="3"
+                                  placeholder="Nhập nội dung cần hỗ trợ..."></textarea>
+                    </div>
+
+                    <div class="support-chat-footer-bottom">
+                        <div class="chat-upload-box">
+                            <label for="hinhAnhFile" class="chat-upload-btn">
+                                <i class="fa-regular fa-image"></i>
+                                <span>Chọn ảnh</span>
+                            </label>
+                            <input type="file" id="hinhAnhFile" name="hinhAnhFile" accept="image/*" class="d-none" />
+                            <span id="chatFileName" class="chat-file-name">Chưa chọn ảnh</span>
+                        </div>
+
+                        <button type="submit" class="btn support-send-btn">
+                            <i class="fa-solid fa-paper-plane me-2"></i>Gửi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.addEventListener("load", function () {
+            const chatBox = document.getElementById("chatMessages");
+            if (chatBox) {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            const fileInput = document.getElementById("hinhAnhFile");
+            const fileName = document.getElementById("chatFileName");
+
+            if (fileInput && fileName) {
+                fileInput.addEventListener("change", function () {
+                    if (this.files && this.files.length > 0) {
+                        fileName.textContent = this.files[0].name;
+                    } else {
+                        fileName.textContent = "Chưa chọn ảnh";
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -60,9 +60,23 @@ namespace ConvenienceStore.Business.Services
             await _donViCongViec.LuuThayDoiAsync();
         }
 
-        public async Task CapNhatAsync(SanPham sanPham)
+        public async Task CapNhatAsync(SanPham sanPhamMoi)
         {
-            _donViCongViec.SanPhams.Sua(sanPham);
+            var sanPhamCu = await _donViCongViec.SanPhams.LayTheoIdAsync(sanPhamMoi.Id);
+
+            if (sanPhamCu == null)
+            {
+                throw new Exception("Không tìm thấy sản phẩm cần cập nhật.");
+            }
+
+            sanPhamCu.TenSanPham = sanPhamMoi.TenSanPham;
+            sanPhamCu.MoTa = sanPhamMoi.MoTa;
+            sanPhamCu.Gia = sanPhamMoi.Gia;
+            sanPhamCu.SoLuongTon = sanPhamMoi.SoLuongTon;
+            sanPhamCu.HinhAnh = sanPhamMoi.HinhAnh;
+            sanPhamCu.DanhMucId = sanPhamMoi.DanhMucId;
+            sanPhamCu.TrangThai = sanPhamMoi.TrangThai;
+
             await _donViCongViec.LuuThayDoiAsync();
         }
 

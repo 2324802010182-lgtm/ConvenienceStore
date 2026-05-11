@@ -1,0 +1,114 @@
+﻿@model IEnumerable<ConvenienceStore.Models.Entities.HoiThoaiChat>
+@using ConvenienceStore.Models.Enums
+
+@{
+    ViewData["Title"] = "Quản lý chat online";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="admin-form-card">
+    <div class="admin-page-header mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2>Quản lý chat online</h2>
+            <p>Danh sách các cuộc trò chuyện cần hỗ trợ</p>
+        </div>
+
+        <div>
+            <span id="thongBaoChatMoi" class="badge bg-danger d-none">Có tin nhắn mới</span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table admin-table">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Khách hàng</th>
+                    <th>Nhân viên phụ trách</th>
+                    <th>Trạng thái</th>
+                    <th>Lần cuối hoạt động</th>
+                    <th>Chưa đọc</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="bangHoiThoai">
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>#@item.Id</td>
+                            <td>@(item.KhachHang?.HoTen ?? item.KhachHang?.Email)</td>
+                            <td>@(item.NhanVienPhuTrach?.HoTen ?? "Chưa có người nhận")</td>
+                            <td>
+                                @if (item.TrangThai == TrangThaiHoiThoaiChat.ChoHoTro)
+                                {
+                                    <span class="badge bg-warning text-dark">Chờ hỗ trợ</span>
+                                }
+                                else if (item.TrangThai == TrangThaiHoiThoaiChat.DangTraoDoi)
+                                {
+                                    <span class="badge bg-success">Đang trao đổi</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Đã đóng</span>
+                                }
+                            </td>
+                            <td>@item.LanHoatDongCuoi.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (!item.QuanTriDaDoc)
+                                {
+                                    <span class="badge bg-danger">Mới</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Đã đọc</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="ChiTiet" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                    Mở chat
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr id="dongKhongCoHoiThoai">
+                        <td colspan="7" class="text-center text-muted">Chưa có hội thoại nào.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script>
+        const thongBaoChatMoi = document.getElementById("thongBaoChatMoi");
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatOnlineHub")
+            .build();
+
+        connection.on("CoHoiThoaiMoi", function (data) {
+            thongBaoChatMoi.classList.remove("d-none");
+            thongBaoChatMoi.innerText = data.thongBao ?? "Có hội thoại mới";
+        });
+
+        connection.on("CoTinNhanMoiChoHoTro", function (data) {
+            thongBaoChatMoi.classList.remove("d-none");
+            thongBaoChatMoi.innerText = data.thongBao ?? "Có tin nhắn mới";
+        });
+
+        connection.start()
+            .then(function () {
+                return connection.invoke("ThamGiaNhomHoTro");
+            })
+            .catch(function (err) {
+                console.error(err.toString());
+            });
+    </script>
+}
