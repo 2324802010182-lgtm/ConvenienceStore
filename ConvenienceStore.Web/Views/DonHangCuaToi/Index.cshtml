@@ -18,6 +18,7 @@
                     <th>Người nhận</th>
                     <th>Số điện thoại</th>
                     <th>Tổng tiền</th>
+                    <th>Thanh toán</th>
                     <th>Ngày đặt</th>
                     <th>Trạng thái</th>
                     <th class="text-center">Chi tiết</th>
@@ -33,6 +34,10 @@
                             <td>@item.HoTenNguoiNhan</td>
                             <td>@item.SoDienThoai</td>
                             <td>@item.TongTien.ToString("N0") đ</td>
+                            <td>
+                                <div>@item.PhuongThucThanhToan</div>
+                                <small class="text-muted">@item.TrangThaiThanhToan</small>
+                            </td>
                             <td>@item.NgayDatHang.ToString("dd/MM/yyyy HH:mm")</td>
                             <td><span class="status-badge status-active">@item.TrangThai</span></td>
                             <td class="text-center">
@@ -46,7 +51,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted">Bạn chưa có đơn hàng nào.</td>
+                        <td colspan="8" class="text-center text-muted">Bạn chưa có đơn hàng nào.</td>
                     </tr>
                 }
             </tbody>

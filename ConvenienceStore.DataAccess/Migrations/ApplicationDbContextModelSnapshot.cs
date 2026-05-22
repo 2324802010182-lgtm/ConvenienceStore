@@ -148,6 +148,9 @@ namespace ConvenienceStore.DataAccess.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<int>("PhuongThucThanhToan")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("TienGiamTuDiem")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -161,6 +164,9 @@ namespace ConvenienceStore.DataAccess.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TrangThai")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TrangThaiThanhToan")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

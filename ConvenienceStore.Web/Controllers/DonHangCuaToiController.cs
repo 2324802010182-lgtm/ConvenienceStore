@@ -37,7 +37,9 @@ namespace ConvenienceStore.Web.Controllers
                 TongTienSauGiam = x.TongTienSauGiam,
 
                 NgayDatHang = x.NgayDatHang,
-                TrangThai = LayTenTrangThai(x.TrangThai)
+                TrangThai = LayTenTrangThai(x.TrangThai),
+                PhuongThucThanhToan = LayTenPhuongThucThanhToan(x.PhuongThucThanhToan),
+                TrangThaiThanhToan = LayTenTrangThaiThanhToan(x.TrangThaiThanhToan)
             }).ToList();
 
             return View(model);
@@ -69,6 +71,8 @@ namespace ConvenienceStore.Web.Controllers
 
                 NgayDatHang = donHang.NgayDatHang,
                 TrangThai = LayTenTrangThai(donHang.TrangThai),
+                PhuongThucThanhToan = LayTenPhuongThucThanhToan(donHang.PhuongThucThanhToan),
+                TrangThaiThanhToan = LayTenTrangThaiThanhToan(donHang.TrangThaiThanhToan),
 
                 DanhSachSanPham = donHang.ChiTietDonHangs?.Select(ct => new ChiTietSanPhamTrongDonViewModel
                 {
@@ -92,6 +96,26 @@ namespace ConvenienceStore.Web.Controllers
                 ConvenienceStore.Models.Enums.TrangThaiDonHang.DangGiao => "Đang giao",
                 ConvenienceStore.Models.Enums.TrangThaiDonHang.DaGiao => "Đã giao",
                 ConvenienceStore.Models.Enums.TrangThaiDonHang.DaHuy => "Đã hủy",
+                _ => "Không xác định"
+            };
+        }
+
+        private string LayTenPhuongThucThanhToan(ConvenienceStore.Models.Enums.PhuongThucThanhToan phuongThuc)
+        {
+            return phuongThuc switch
+            {
+                ConvenienceStore.Models.Enums.PhuongThucThanhToan.ThanhToanKhiNhanHang => "Thanh toán khi nhận hàng",
+                ConvenienceStore.Models.Enums.PhuongThucThanhToan.ChuyenKhoanNganHang => "Chuyển khoản ngân hàng",
+                _ => "Không xác định"
+            };
+        }
+
+        private string LayTenTrangThaiThanhToan(ConvenienceStore.Models.Enums.TrangThaiThanhToan trangThai)
+        {
+            return trangThai switch
+            {
+                ConvenienceStore.Models.Enums.TrangThaiThanhToan.ChuaThanhToan => "Chưa thanh toán",
+                ConvenienceStore.Models.Enums.TrangThaiThanhToan.DaThanhToan => "Đã thanh toán",
                 _ => "Không xác định"
             };
         }

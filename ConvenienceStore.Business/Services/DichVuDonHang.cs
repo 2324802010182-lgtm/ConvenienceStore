@@ -68,6 +68,7 @@ namespace ConvenienceStore.Business.Services
             string hoTenNguoiNhan,
             string soDienThoai,
             string diaChiNhanHang,
+            PhuongThucThanhToan phuongThucThanhToan,
             int diemDaSuDung = 0,
             decimal tienGiamTuDiem = 0)
         {
@@ -104,7 +105,9 @@ namespace ConvenienceStore.Business.Services
                 TienGiamTuDiem = tienGiamTuDiem,
                 TongTienSauGiam = tongTienSauGiam,
                 NgayDatHang = DateTime.Now,
-                TrangThai = TrangThaiDonHang.ChoXacNhan
+                TrangThai = TrangThaiDonHang.ChoXacNhan,
+                PhuongThucThanhToan = phuongThucThanhToan,
+                TrangThaiThanhToan = TrangThaiThanhToan.ChuaThanhToan
             };
 
             await _donViCongViec.DonHangs.ThemAsync(donHang);
@@ -134,6 +137,7 @@ namespace ConvenienceStore.Business.Services
             string hoTenNguoiNhan,
             string soDienThoai,
             string diaChiNhanHang,
+            PhuongThucThanhToan phuongThucThanhToan,
             int diemDaSuDung = 0,
             decimal tienGiamTuDiem = 0)
         {
@@ -183,7 +187,9 @@ namespace ConvenienceStore.Business.Services
                 TongTienSauGiam = tongTienSauGiam,
 
                 NgayDatHang = DateTime.Now,
-                TrangThai = TrangThaiDonHang.ChoXacNhan
+                TrangThai = TrangThaiDonHang.ChoXacNhan,
+                PhuongThucThanhToan = phuongThucThanhToan,
+                TrangThaiThanhToan = TrangThaiThanhToan.ChuaThanhToan
             };
 
             await _donViCongViec.DonHangs.ThemAsync(donHang);

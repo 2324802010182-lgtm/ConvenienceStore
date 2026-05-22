@@ -39,6 +39,10 @@ namespace ConvenienceStore.Models.Entities
 
         public TrangThaiDonHang TrangThai { get; set; } = TrangThaiDonHang.ChoXacNhan;
 
+        public PhuongThucThanhToan PhuongThucThanhToan { get; set; } = PhuongThucThanhToan.ThanhToanKhiNhanHang;
+
+        public TrangThaiThanhToan TrangThaiThanhToan { get; set; } = TrangThaiThanhToan.ChuaThanhToan;
+
         public ICollection<ChiTietDonHang>? ChiTietDonHangs { get; set; }
     }
 }

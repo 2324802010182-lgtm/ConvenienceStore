@@ -91,6 +91,14 @@
                 }
             </div>
 
+            <div class="col-md-6 mb-3">
+                <strong>Phương thức thanh toán:</strong> @Model.PhuongThucThanhToan
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <strong>Trạng thái thanh toán:</strong> @Model.TrangThaiThanhToan
+            </div>
+
             @if (Model.DiemDaSuDung > 0 || Model.TienGiamTuDiem > 0 || Model.TongTienSauGiam > 0)
             {
                 <div class="col-md-4 mb-3">

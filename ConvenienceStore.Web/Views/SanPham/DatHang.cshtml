@@ -6,6 +6,8 @@
     var tongTienBanDau = Model.Gia * Model.SoLuong;
     var diemToiDaTheoTongTien = (int)Math.Floor(tongTienBanDau / 1000m);
     var diemToiDaDuocDung = Math.Min(Model.DiemHienCo, diemToiDaTheoTongTien);
+    var cod = ConvenienceStore.Models.Enums.PhuongThucThanhToan.ThanhToanKhiNhanHang;
+    var chuyenKhoan = ConvenienceStore.Models.Enums.PhuongThucThanhToan.ChuyenKhoanNganHang;
 }
 
 <div class="auth-page">
@@ -136,6 +138,57 @@
                 <span asp-validation-for="DiaChiNhanHang" class="text-danger"></span>
             </div>
 
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Phương thức thanh toán</h5>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="PhuongThucThanhToan"
+                               class="form-check-input"
+                               type="radio"
+                               value="@cod"
+                               id="thanhToanCod" />
+                        <label class="form-check-label" for="thanhToanCod">
+                            Thanh toán khi nhận hàng
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input asp-for="PhuongThucThanhToan"
+                               class="form-check-input"
+                               type="radio"
+                               value="@chuyenKhoan"
+                               id="thanhToanNganHang" />
+                        <label class="form-check-label" for="thanhToanNganHang">
+                            Chuyển khoản ngân hàng
+                        </label>
+                    </div>
+
+                    <div id="thongTinChuyenKhoan" class="alert alert-info mt-3 mb-0" style="display:none;">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-5 text-center">
+                                <img id="anhQrChuyenKhoan"
+                                     src=""
+                                     alt="Mã QR chuyển khoản"
+                                     class="img-fluid bg-white border rounded"
+                                     style="max-width:260px;" />
+                            </div>
+
+                            <div class="col-md-7">
+                                <strong>Thông tin chuyển khoản:</strong><br />
+                                Ngân hàng: MB Bank<br />
+                                Số tài khoản: 897731818<br />
+                                Chủ tài khoản: HA DUC ANH<br />
+                                Số tiền: <strong id="soTienQrText">@tongTienBanDau.ToString("N0") đ</strong><br />
+                                Nội dung: <strong id="noiDungQrText">DAT HANG AKD STORE</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span asp-validation-for="PhuongThucThanhToan" class="text-danger"></span>
+                </div>
+            </div>
+
             <button type="submit" class="btn auth-btn w-100">
                 Xác nhận đặt hàng
             </button>
@@ -155,6 +208,13 @@
             const tongTienHangText = document.getElementById("tongTienHangText");
             const giamTuDiemText = document.getElementById("giamTuDiemText");
             const canThanhToanText = document.getElementById("canThanhToanText");
+            const soDienThoaiInput = document.getElementById("SoDienThoai");
+            const thanhToanCodInput = document.getElementById("thanhToanCod");
+            const thanhToanNganHangInput = document.getElementById("thanhToanNganHang");
+            const thongTinChuyenKhoan = document.getElementById("thongTinChuyenKhoan");
+            const anhQrChuyenKhoan = document.getElementById("anhQrChuyenKhoan");
+            const soTienQrText = document.getElementById("soTienQrText");
+            const noiDungQrText = document.getElementById("noiDungQrText");
 
             if (!giaSanPhamInput || !soLuongInput || !diemMuonDoiInput) {
                 return;
@@ -165,6 +225,36 @@
 
             function formatMoney(value) {
                 return Math.round(value).toLocaleString("vi-VN") + " đ";
+            }
+
+            function taoNoiDungChuyenKhoan() {
+                const soDienThoai = (soDienThoaiInput?.value || "").trim();
+                return soDienThoai ? "DH " + soDienThoai : "DAT HANG AKD STORE";
+            }
+
+            function capNhatQrChuyenKhoan(soTien) {
+                if (!anhQrChuyenKhoan || !soTienQrText || !noiDungQrText) {
+                    return;
+                }
+
+                const soTienLamTron = Math.max(0, Math.round(soTien));
+                const noiDung = taoNoiDungChuyenKhoan();
+                const qrUrl = "https://img.vietqr.io/image/MB-897731818-compact2.png"
+                    + "?amount=" + soTienLamTron
+                    + "&addInfo=" + encodeURIComponent(noiDung)
+                    + "&accountName=" + encodeURIComponent("HA DUC ANH");
+
+                anhQrChuyenKhoan.src = qrUrl;
+                soTienQrText.innerText = formatMoney(soTienLamTron);
+                noiDungQrText.innerText = noiDung;
+            }
+
+            function capNhatHienThiThanhToan() {
+                if (!thongTinChuyenKhoan || !thanhToanNganHangInput) {
+                    return;
+                }
+
+                thongTinChuyenKhoan.style.display = thanhToanNganHangInput.checked ? "block" : "none";
             }
 
             function capNhatTongTien() {
@@ -205,6 +295,8 @@
                 tongTienHangText.innerText = formatMoney(tongTien);
                 giamTuDiemText.innerText = "-" + formatMoney(tienGiam);
                 canThanhToanText.innerText = formatMoney(canThanhToan);
+                capNhatQrChuyenKhoan(canThanhToan);
+                capNhatHienThiThanhToan();
             }
 
             soLuongInput.addEventListener("input", capNhatTongTien);
@@ -212,6 +304,9 @@
 
             diemMuonDoiInput.addEventListener("input", capNhatTongTien);
             diemMuonDoiInput.addEventListener("change", capNhatTongTien);
+            soDienThoaiInput?.addEventListener("input", capNhatTongTien);
+            thanhToanCodInput?.addEventListener("change", capNhatHienThiThanhToan);
+            thanhToanNganHangInput?.addEventListener("change", capNhatHienThiThanhToan);
 
             capNhatTongTien();
         });

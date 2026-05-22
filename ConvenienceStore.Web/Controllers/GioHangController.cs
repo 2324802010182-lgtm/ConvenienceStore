@@ -206,6 +206,7 @@ namespace ConvenienceStore.Web.Controllers
                     model.HoTenNguoiNhan,
                     model.SoDienThoai,
                     model.DiaChiNhanHang,
+                    model.PhuongThucThanhToan,
                     model.DiemMuonDoi,
                     tienGiamTuDiem);
 
@@ -233,9 +234,12 @@ namespace ConvenienceStore.Web.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult DatHangThanhCong(int id)
+        public async Task<IActionResult> DatHangThanhCong(int id)
         {
             ViewBag.DonHangId = id;
+            var donHang = await _dichVuDonHang.LayChiTietAsync(id);
+            ViewBag.LaChuyenKhoan = donHang?.PhuongThucThanhToan == ConvenienceStore.Models.Enums.PhuongThucThanhToan.ChuyenKhoanNganHang;
+            ViewBag.CanThanhToan = donHang?.TongTienSauGiam > 0 ? donHang.TongTienSauGiam : donHang?.TongTien ?? 0;
             return View();
         }
 

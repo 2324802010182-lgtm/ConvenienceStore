@@ -24,6 +24,10 @@
 
         public string TrangThai { get; set; } = string.Empty;
 
+        public string PhuongThucThanhToan { get; set; } = string.Empty;
+
+        public string TrangThaiThanhToan { get; set; } = string.Empty;
+
         public List<ChiTietSanPhamTrongDonViewModel> DanhSachSanPham { get; set; } = new();
     }
 

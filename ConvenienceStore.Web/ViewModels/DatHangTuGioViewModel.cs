@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using ConvenienceStore.Models.Enums;
+
 namespace ConvenienceStore.Web.ViewModels
 {
     public class DatHangTuGioViewModel
@@ -39,5 +41,8 @@ namespace ConvenienceStore.Web.ViewModels
                 return tongSauGiam < 0 ? 0 : tongSauGiam;
             }
         }
+
+        [Required(ErrorMessage = "Vui lòng chọn phương thức thanh toán")]
+        public PhuongThucThanhToan PhuongThucThanhToan { get; set; } = PhuongThucThanhToan.ThanhToanKhiNhanHang;
     }
 }

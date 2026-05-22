@@ -35,7 +35,9 @@ namespace ConvenienceStore.Web.Controllers
                 TongTienSauGiam = x.TongTienSauGiam,
 
                 NgayDatHang = x.NgayDatHang,
-                TrangThai = LayTenTrangThai(x.TrangThai)
+                TrangThai = LayTenTrangThai(x.TrangThai),
+                PhuongThucThanhToan = LayTenPhuongThucThanhToan(x.PhuongThucThanhToan),
+                TrangThaiThanhToan = LayTenTrangThaiThanhToan(x.TrangThaiThanhToan)
             }).ToList();
 
             return View(model);
@@ -62,6 +64,8 @@ namespace ConvenienceStore.Web.Controllers
 
                 NgayDatHang = donHang.NgayDatHang,
                 TrangThai = LayTenTrangThai(donHang.TrangThai),
+                PhuongThucThanhToan = LayTenPhuongThucThanhToan(donHang.PhuongThucThanhToan),
+                TrangThaiThanhToan = LayTenTrangThaiThanhToan(donHang.TrangThaiThanhToan),
 
                 DanhSachSanPham = donHang.ChiTietDonHangs?.Select(ct => new ChiTietSanPhamTrongDonViewModel
                 {
@@ -102,6 +106,26 @@ namespace ConvenienceStore.Web.Controllers
                 TrangThaiDonHang.DangGiao => "Đang giao",
                 TrangThaiDonHang.DaGiao => "Đã giao",
                 TrangThaiDonHang.DaHuy => "Đã hủy",
+                _ => "Không xác định"
+            };
+        }
+
+        private string LayTenPhuongThucThanhToan(PhuongThucThanhToan phuongThuc)
+        {
+            return phuongThuc switch
+            {
+                PhuongThucThanhToan.ThanhToanKhiNhanHang => "Thanh toán khi nhận hàng",
+                PhuongThucThanhToan.ChuyenKhoanNganHang => "Chuyển khoản ngân hàng",
+                _ => "Không xác định"
+            };
+        }
+
+        private string LayTenTrangThaiThanhToan(TrangThaiThanhToan trangThai)
+        {
+            return trangThai switch
+            {
+                TrangThaiThanhToan.ChuaThanhToan => "Chưa thanh toán",
+                TrangThaiThanhToan.DaThanhToan => "Đã thanh toán",
                 _ => "Không xác định"
             };
         }

@@ -16,6 +16,7 @@ namespace ConvenienceStore.Business.Interfaces
             string hoTenNguoiNhan,
             string soDienThoai,
             string diaChiNhanHang,
+            PhuongThucThanhToan phuongThucThanhToan,
             int diemDaSuDung = 0,
             decimal tienGiamTuDiem = 0);
         Task<int> TaoDonHangTuGioAsync(
@@ -24,6 +25,7 @@ namespace ConvenienceStore.Business.Interfaces
             string hoTenNguoiNhan,
             string soDienThoai,
             string diaChiNhanHang,
+            PhuongThucThanhToan phuongThucThanhToan,
             int diemDaSuDung = 0,
             decimal tienGiamTuDiem = 0);
       }

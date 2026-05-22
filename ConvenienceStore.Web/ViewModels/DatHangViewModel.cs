@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using ConvenienceStore.Models.Enums;
+
 namespace ConvenienceStore.Web.ViewModels
 {
     public class DatHangViewModel
@@ -25,5 +27,8 @@ namespace ConvenienceStore.Web.ViewModels
 
         [Range(0, int.MaxValue, ErrorMessage = "Số điểm muốn dùng không hợp lệ")]
         public int DiemMuonDoi { get; set; }
+
+        [Required(ErrorMessage = "Vui lòng chọn phương thức thanh toán")]
+        public PhuongThucThanhToan PhuongThucThanhToan { get; set; } = PhuongThucThanhToan.ThanhToanKhiNhanHang;
     }
 }
