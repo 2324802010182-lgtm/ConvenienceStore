@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
+    bool coTheHuyDon = ViewBag.CoTheHuyDon == true;
 }
 
 <div class="container py-4">
@@ -10,34 +11,115 @@
             <h2>Chi tiết đơn hàng #@Model.Id</h2>
             <p class="text-muted mb-0">Thông tin đơn hàng của bạn</p>
         </div>
-        <a asp-action="Index" class="btn admin-secondary-btn">Quay lại</a>
+
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn admin-secondary-btn">Quay lại</a>
+
+            @if (coTheHuyDon)
+            {
+                <form asp-action="HuyDonHang"
+                      asp-route-id="@Model.Id"
+                      method="post"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit" class="btn btn-danger">
+                        Hủy đơn hàng
+                    </button>
+                </form>
+            }
+        </div>
     </div>
+
+    @if (TempData["ThanhCong"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["ThanhCong"]
+        </div>
+    }
+
+    @if (TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Loi"]
+        </div>
+    }
 
     <div class="admin-form-card mb-4">
         <div class="row">
             <div class="col-md-6 mb-3">
                 <strong>Người nhận:</strong> @Model.HoTenNguoiNhan
             </div>
+
             <div class="col-md-6 mb-3">
                 <strong>Số điện thoại:</strong> @Model.SoDienThoai
             </div>
+
             <div class="col-md-6 mb-3">
                 <strong>Email người đặt:</strong> @Model.EmailNguoiDat
             </div>
+
             <div class="col-md-6 mb-3">
                 <strong>Ngày đặt:</strong> @Model.NgayDatHang.ToString("dd/MM/yyyy HH:mm")
             </div>
+
             <div class="col-12 mb-3">
                 <strong>Địa chỉ nhận hàng:</strong> @Model.DiaChiNhanHang
             </div>
-            <div class="col-md-6">
+
+            <div class="col-md-6 mb-3">
                 <strong>Tổng tiền:</strong> @Model.TongTien.ToString("N0") đ
             </div>
-            <div class="col-md-6">
-                <strong>Trạng thái:</strong> @Model.TrangThai
+
+            <div class="col-md-6 mb-3">
+                <strong>Trạng thái:</strong>
+                @if (Model.TrangThai == "Đã hủy")
+                {
+                    <span class="badge bg-danger">@Model.TrangThai</span>
+                }
+                else if (Model.TrangThai == "Chờ xác nhận")
+                {
+                    <span class="badge bg-warning text-dark">@Model.TrangThai</span>
+                }
+                else if (Model.TrangThai == "Đã giao")
+                {
+                    <span class="badge bg-success">@Model.TrangThai</span>
+                }
+                else
+                {
+                    <span class="badge bg-primary">@Model.TrangThai</span>
+                }
             </div>
+
+            @if (Model.DiemDaSuDung > 0 || Model.TienGiamTuDiem > 0 || Model.TongTienSauGiam > 0)
+            {
+                <div class="col-md-4 mb-3">
+                    <strong>Điểm đã dùng:</strong> @Model.DiemDaSuDung
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <strong>Tiền giảm từ điểm:</strong> @Model.TienGiamTuDiem.ToString("N0") đ
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <strong>Cần thanh toán:</strong> @Model.TongTienSauGiam.ToString("N0") đ
+                </div>
+            }
         </div>
     </div>
+
+    @if (coTheHuyDon)
+    {
+        <div class="alert alert-info">
+            Đơn hàng đang ở trạng thái <strong>Chờ xác nhận</strong>, bạn có thể hủy đơn nếu không còn nhu cầu mua hàng.
+        </div>
+    }
+    else if (Model.TrangThai != "Đã hủy")
+    {
+        <div class="alert alert-secondary">
+            Đơn hàng hiện không thể hủy vì đã được xử lý hoặc đang trong quá trình giao hàng.
+        </div>
+    }
 
     <div class="admin-table-card">
         <h4 class="mb-3">Sản phẩm trong đơn</h4>
@@ -51,6 +133,7 @@
                     <th>Thành tiền</th>
                 </tr>
             </thead>
+
             <tbody>
                 @foreach (var item in Model.DanhSachSanPham)
                 {

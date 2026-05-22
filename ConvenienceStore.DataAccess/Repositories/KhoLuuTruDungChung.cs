@@ -32,10 +32,17 @@ namespace ConvenienceStore.DataAccess.Repositories
 
         public void Sua(T entity)
         {
+            var idEntityCanSua = LayGiaTriId(entity);
+
             var trackedEntity = _context.ChangeTracker.Entries<T>()
-                .FirstOrDefault(e => EqualityComparer<object>.Default.Equals(
-                    EF.Property<object>(e.Entity, "Id"),
-                    EF.Property<object>(entity, "Id")));
+                .FirstOrDefault(e =>
+                {
+                    var idEntityDangTheoDoi = LayGiaTriId(e.Entity);
+
+                    return idEntityCanSua != null
+                        && idEntityDangTheoDoi != null
+                        && idEntityCanSua.Equals(idEntityDangTheoDoi);
+                });
 
             if (trackedEntity != null)
             {
@@ -53,6 +60,18 @@ namespace ConvenienceStore.DataAccess.Repositories
         public async Task<IEnumerable<T>> TimAsync(Expression<Func<T, bool>> dieuKien)
         {
             return await _dbSet.Where(dieuKien).ToListAsync();
+        }
+
+        private object? LayGiaTriId(T entity)
+        {
+            var property = typeof(T).GetProperty("Id");
+
+            if (property == null)
+            {
+                return null;
+            }
+
+            return property.GetValue(entity);
         }
     }
 }
