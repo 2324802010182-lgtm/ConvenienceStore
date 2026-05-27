@@ -30,10 +30,88 @@ namespace ConvenienceStore.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("ComboId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("DonGia")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("DonHangId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("HinhAnhHienThi")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("LaCombo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MoTaCombo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SanPhamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SoLuong")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TenHienThi")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComboId");
+
+                    b.HasIndex("DonHangId");
+
+                    b.HasIndex("SanPhamId");
+
+                    b.ToTable("ChiTietDonHangs", (string)null);
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Models.Entities.Combo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("GiaCombo")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("HinhAnh")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MoTa")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TenCombo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("TrangThai")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Combos", (string)null);
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Models.Entities.ComboSanPham", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ComboId")
                         .HasColumnType("int");
 
                     b.Property<int>("SanPhamId")
@@ -44,11 +122,11 @@ namespace ConvenienceStore.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DonHangId");
+                    b.HasIndex("ComboId");
 
                     b.HasIndex("SanPhamId");
 
-                    b.ToTable("ChiTietDonHangs", (string)null);
+                    b.ToTable("ComboSanPhams", (string)null);
                 });
 
             modelBuilder.Entity("ConvenienceStore.Models.Entities.DanhGiaSanPham", b =>
@@ -143,13 +221,13 @@ namespace ConvenienceStore.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("PhuongThucThanhToan")
+                        .HasColumnType("int");
+
                     b.Property<string>("SoDienThoai")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("PhuongThucThanhToan")
-                        .HasColumnType("int");
 
                     b.Property<decimal>("TienGiamTuDiem")
                         .HasPrecision(18, 2)
@@ -634,6 +712,11 @@ namespace ConvenienceStore.DataAccess.Migrations
 
             modelBuilder.Entity("ConvenienceStore.Models.Entities.ChiTietDonHang", b =>
                 {
+                    b.HasOne("ConvenienceStore.Models.Entities.Combo", "Combo")
+                        .WithMany()
+                        .HasForeignKey("ComboId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ConvenienceStore.Models.Entities.DonHang", "DonHang")
                         .WithMany("ChiTietDonHangs")
                         .HasForeignKey("DonHangId")
@@ -646,7 +729,28 @@ namespace ConvenienceStore.DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Combo");
+
                     b.Navigation("DonHang");
+
+                    b.Navigation("SanPham");
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Models.Entities.ComboSanPham", b =>
+                {
+                    b.HasOne("ConvenienceStore.Models.Entities.Combo", "Combo")
+                        .WithMany("ComboSanPhams")
+                        .HasForeignKey("ComboId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ConvenienceStore.Models.Entities.SanPham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("SanPhamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Combo");
 
                     b.Navigation("SanPham");
                 });
@@ -822,6 +926,11 @@ namespace ConvenienceStore.DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ConvenienceStore.Models.Entities.Combo", b =>
+                {
+                    b.Navigation("ComboSanPhams");
                 });
 
             modelBuilder.Entity("ConvenienceStore.Models.Entities.DanhMuc", b =>

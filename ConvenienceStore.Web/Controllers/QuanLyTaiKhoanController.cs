@@ -200,8 +200,8 @@ namespace ConvenienceStore.Web.Controllers
 
                 DanhSachSanPham = donHang.ChiTietDonHangs?.Select(ct => new ChiTietSanPhamTrongDonViewModel
                 {
-                    TenSanPham = ct.SanPham != null ? ct.SanPham.TenSanPham : "",
-                    HinhAnh = ct.SanPham != null ? ct.SanPham.HinhAnh : null,
+                    TenSanPham = !string.IsNullOrWhiteSpace(ct.TenHienThi) ? ct.TenHienThi : (ct.SanPham != null ? ct.SanPham.TenSanPham : ""),
+                    HinhAnh = !string.IsNullOrWhiteSpace(ct.HinhAnhHienThi) ? ct.HinhAnhHienThi : (ct.SanPham != null ? ct.SanPham.HinhAnh : null),
                     SoLuong = ct.SoLuong,
                     DonGia = ct.DonGia,
                     ThanhTien = ct.ThanhTien

@@ -1,0 +1,155 @@
+@inject ConvenienceStore.DataAccess.ApplicationDbContext DbContext
+@model ConvenienceStore.Models.Entities.Combo
+
+@{
+    ViewData["Title"] = Model.TenCombo;
+    var danhMucs = DbContext.DanhMucs.Where(x => x.TrangThai).ToList();
+    var anhCombo = Model.HinhAnh ?? Model.ComboSanPhams.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.SanPham?.HinhAnh))?.SanPham?.HinhAnh;
+    var duongDanAnhCombo = LayDuongDanAnh(anhCombo);
+    var danhSachSanPham = Model.ComboSanPhams
+        .Where(x => x.SanPham != null)
+        .OrderBy(x => x.SanPham!.TenSanPham)
+        .ToList();
+    var soLuongCoTheBan = danhSachSanPham.Any()
+        ? danhSachSanPham.Select(x => x.SanPham!.SoLuongTon / Math.Max(x.SoLuong, 1)).DefaultIfEmpty(0).Min()
+        : 0;
+}
+
+<div class="container-fluid px-3 px-md-4">
+    <div class="shop-page-layout">
+        <aside class="home-sidebar">
+            <div class="sidebar-logo-box">
+                <a asp-controller="Home" asp-action="Index" class="sidebar-logo-link">
+                    <img src="~/images/logo-big.png" alt="AKD Store" class="sidebar-logo-big" />
+                </a>
+            </div>
+
+            <div class="sidebar-title">
+                DANH MỤC SẢN PHẨM
+            </div>
+
+            <ul class="sidebar-category-list">
+                @foreach (var danhMuc in danhMucs)
+                {
+                    <li>
+                        <a asp-controller="SanPhamKhach"
+                           asp-action="TheoDanhMuc"
+                           asp-route-id="@danhMuc.Id"
+                           class="sidebar-category-link">
+                            @danhMuc.TenDanhMuc
+                        </a>
+                    </li>
+                }
+            </ul>
+        </aside>
+
+        <div class="shop-main-content">
+            <div class="page-content-card combo-detail-page">
+                <div class="admin-form-card mb-4">
+                    <div class="row g-4 align-items-start">
+                        <div class="col-lg-5">
+                            <div class="combo-detail-image-wrap">
+                                <span class="flash-sale-badge combo-detail-badge">COMBO</span>
+                                <img src="@duongDanAnhCombo"
+                                     alt="@Model.TenCombo"
+                                     class="combo-detail-image" />
+                            </div>
+                        </div>
+
+                        <div class="col-lg-7">
+                            <h2 class="combo-detail-title">@Model.TenCombo</h2>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.MoTa))
+                            {
+                                <p class="combo-detail-desc">@Model.MoTa</p>
+                            }
+
+                            <div class="price-wrap flex-column align-items-start mb-3">
+                                <span class="flash-sale-price">@Model.GiaCombo.ToString("N0") đ</span>
+                                @if (Model.GiaGoc > Model.GiaCombo)
+                                {
+                                    <span class="old-price">@Model.GiaGoc.ToString("N0") đ</span>
+                                    <span class="discount-badge">Tiết kiệm @Model.PhanTramTietKiem%</span>
+                                }
+                            </div>
+
+                            <div class="combo-detail-summary mb-4">
+                                <i class="fa-solid fa-gift"></i>
+                                <span>@danhSachSanPham.Count sản phẩm trong combo</span>
+                            </div>
+
+                            <div class="d-flex gap-2 flex-wrap">
+                                @if (soLuongCoTheBan > 0)
+                                {
+                                    <form asp-controller="GioHang" asp-action="ThemComboVaoGio" method="post">
+                                        <input type="hidden" name="comboId" value="@Model.Id" />
+                                        <input type="hidden" name="soLuong" value="1" />
+                                        <button type="submit" class="btn auth-btn">Thêm combo vào giỏ</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn admin-secondary-btn" disabled>Tạm hết combo</button>
+                                }
+
+                                <a asp-controller="Home" asp-action="Index" class="btn admin-secondary-btn">
+                                    Quay lại trang chủ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-form-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h3 class="mb-0">Sản phẩm trong combo</h3>
+                    </div>
+
+                    <div class="combo-detail-products">
+                        @foreach (var item in danhSachSanPham)
+                        {
+                            var sanPham = item.SanPham!;
+                            var duongDanAnh = LayDuongDanAnh(sanPham.HinhAnh);
+
+                            <a asp-controller="SanPhamKhach"
+                               asp-action="ChiTiet"
+                               asp-route-id="@sanPham.Id"
+                               class="combo-detail-product">
+                                <img src="@duongDanAnh" alt="@sanPham.TenSanPham" />
+                                <div>
+                                    <div class="combo-detail-product-name">
+                                        @sanPham.TenSanPham
+                                        @if (item.SoLuong > 1)
+                                        {
+                                            <span>x@item.SoLuong</span>
+                                        }
+                                    </div>
+                                    <div class="combo-detail-product-meta">
+                                        @sanPham.Gia.ToString("N0") đ
+                                        @if (sanPham.DanhMuc != null)
+                                        {
+                                            <span>@sanPham.DanhMuc.TenDanhMuc</span>
+                                        }
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private static string LayDuongDanAnh(string? hinhAnh)
+    {
+        if (string.IsNullOrWhiteSpace(hinhAnh))
+            return "/images/no-image.png";
+
+        if (hinhAnh.StartsWith("http://") || hinhAnh.StartsWith("https://") || hinhAnh.StartsWith("/images/"))
+            return hinhAnh;
+
+        return "/images/" + hinhAnh;
+    }
+}

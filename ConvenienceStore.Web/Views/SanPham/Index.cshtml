@@ -22,7 +22,6 @@
                 <th>Mã</th>
                 <th>Tên sản phẩm</th>
                 <th>Giá</th>
-                <th>Số lượng tồn</th>
                 <th>Danh mục</th>
                 <th>Trạng thái</th>
                 <th>Khuyến mãi</th>
@@ -36,7 +35,6 @@
                     <td>@item.Id</td>
                     <td>@item.TenSanPham</td>
                     <td>@item.Gia.ToString("N0") đ</td>
-                    <td>@item.SoLuongTon</td>
                     <td>@item.DanhMuc?.TenDanhMuc</td>
                     <td>
                         @if (item.TrangThai)

@@ -21,6 +21,8 @@ namespace ConvenienceStore.DataAccess
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public DbSet<DanhGiaSanPham> DanhGiaSanPhams { get; set; }
         public DbSet<LichSuDiem> LichSuDiems { get; set; }
+        public DbSet<Combo> Combos { get; set; }
+        public DbSet<ComboSanPham> ComboSanPhams { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<HoiThoaiChat>().ToTable("HoiThoaiChats");
@@ -84,9 +86,24 @@ namespace ConvenienceStore.DataAccess
                 .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<DanhMuc>().ToTable("DanhMucs");
             modelBuilder.Entity<SanPham>().ToTable("SanPhams");
+            modelBuilder.Entity<Combo>().ToTable("Combos");
+            modelBuilder.Entity<ComboSanPham>().ToTable("ComboSanPhams");
             modelBuilder.Entity<DonHang>().ToTable("DonHangs");
             modelBuilder.Entity<ChiTietDonHang>().ToTable("ChiTietDonHangs");
             modelBuilder.Entity<DanhGiaSanPham>().ToTable("DanhGiaSanPhams");
+            modelBuilder.Entity<Combo>()
+                .Property(x => x.GiaCombo)
+                .HasPrecision(18, 2);
+            modelBuilder.Entity<Combo>()
+                .HasMany(x => x.ComboSanPhams)
+                .WithOne(x => x.Combo)
+                .HasForeignKey(x => x.ComboId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ComboSanPham>()
+                .HasOne(x => x.SanPham)
+                .WithMany()
+                .HasForeignKey(x => x.SanPhamId)
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<DanhGiaSanPham>()
                  .HasOne(x => x.SanPham)
                  .WithMany()
@@ -124,6 +141,11 @@ namespace ConvenienceStore.DataAccess
                 .HasOne(ct => ct.SanPham)
                 .WithMany()
                 .HasForeignKey(ct => ct.SanPhamId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ChiTietDonHang>()
+                .HasOne(ct => ct.Combo)
+                .WithMany()
+                .HasForeignKey(ct => ct.ComboId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<DonHang>()

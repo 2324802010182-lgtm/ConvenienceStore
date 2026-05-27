@@ -1,8 +1,10 @@
-﻿using ConvenienceStore.Business.Interfaces;
+using ConvenienceStore.Business.Interfaces;
+using ConvenienceStore.DataAccess;
 using ConvenienceStore.Models.Entities;
 using ConvenienceStore.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -13,17 +15,20 @@ namespace ConvenienceStore.Web.Controllers
         private readonly IDichVuSanPham _dichVuSanPham;
         private readonly IDichVuDonHang _dichVuDonHang;
         private readonly IDichVuDiemTichLuy _dichVuDiemTichLuy;
+        private readonly ApplicationDbContext _context;
 
         private const string TenSessionGioHang = "GIO_HANG";
 
         public GioHangController(
             IDichVuSanPham dichVuSanPham,
             IDichVuDonHang dichVuDonHang,
-            IDichVuDiemTichLuy dichVuDiemTichLuy)
+            IDichVuDiemTichLuy dichVuDiemTichLuy,
+            ApplicationDbContext context)
         {
             _dichVuSanPham = dichVuSanPham;
             _dichVuDonHang = dichVuDonHang;
             _dichVuDiemTichLuy = dichVuDiemTichLuy;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -41,8 +46,7 @@ namespace ConvenienceStore.Web.Controllers
                 return NotFound();
 
             var gioHang = LayGioHang();
-
-            var itemDaCo = gioHang.FirstOrDefault(x => x.SanPhamId == sanPhamId);
+            var itemDaCo = gioHang.FirstOrDefault(x => !x.LaCombo && x.SanPhamId == sanPhamId);
 
             if (itemDaCo == null)
             {
@@ -72,11 +76,63 @@ namespace ConvenienceStore.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult CapNhatSoLuong(int sanPhamId, int soLuong)
+        public async Task<IActionResult> ThemComboVaoGio(int comboId, int soLuong = 1)
+        {
+            var combo = await LayComboHopLeAsync(comboId);
+
+            if (combo == null)
+                return NotFound();
+
+            var soLuongCoTheBan = LaySoLuongComboCoTheBan(combo);
+
+            if (soLuongCoTheBan <= 0)
+            {
+                TempData["Loi"] = "Combo hiện chưa đủ sản phẩm để bán.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var gioHang = LayGioHang();
+            var itemDaCo = gioHang.FirstOrDefault(x => x.LaCombo && x.ComboId == comboId);
+            var hinhAnh = combo.HinhAnh ?? combo.ComboSanPhams.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.SanPham?.HinhAnh))?.SanPham?.HinhAnh;
+            var moTaCombo = string.Join(" + ", combo.ComboSanPhams.Select(x => x.SanPham?.TenSanPham).Where(x => !string.IsNullOrWhiteSpace(x)));
+
+            if (itemDaCo == null)
+            {
+                gioHang.Add(new GioHangItemViewModel
+                {
+                    ComboId = combo.Id,
+                    LaCombo = true,
+                    TenSanPham = combo.TenCombo,
+                    HinhAnh = hinhAnh,
+                    MoTaCombo = moTaCombo,
+                    Gia = combo.GiaCombo,
+                    SoLuong = Math.Min(soLuong, soLuongCoTheBan),
+                    SoLuongTon = soLuongCoTheBan
+                });
+            }
+            else
+            {
+                itemDaCo.SoLuong += soLuong;
+
+                if (itemDaCo.SoLuong > soLuongCoTheBan)
+                    itemDaCo.SoLuong = soLuongCoTheBan;
+            }
+
+            LuuGioHang(gioHang);
+
+            TempData["ThanhCong"] = "Đã thêm combo vào giỏ hàng.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public IActionResult CapNhatSoLuong(int? sanPhamId, int? comboId, int soLuong)
         {
             var gioHang = LayGioHang();
 
-            var item = gioHang.FirstOrDefault(x => x.SanPhamId == sanPhamId);
+            var item = comboId.HasValue
+                ? gioHang.FirstOrDefault(x => x.LaCombo && x.ComboId == comboId)
+                : gioHang.FirstOrDefault(x => !x.LaCombo && x.SanPhamId == sanPhamId);
 
             if (item != null)
             {
@@ -96,11 +152,13 @@ namespace ConvenienceStore.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult XoaKhoiGio(int sanPhamId)
+        public IActionResult XoaKhoiGio(int? sanPhamId, int? comboId)
         {
             var gioHang = LayGioHang();
 
-            var item = gioHang.FirstOrDefault(x => x.SanPhamId == sanPhamId);
+            var item = comboId.HasValue
+                ? gioHang.FirstOrDefault(x => x.LaCombo && x.ComboId == comboId)
+                : gioHang.FirstOrDefault(x => !x.LaCombo && x.SanPhamId == sanPhamId);
 
             if (item != null)
             {
@@ -185,8 +243,6 @@ namespace ConvenienceStore.Web.Controllers
                 tienGiamTuDiem = tongTien;
             }
 
-            var tongTienSauGiam = tongTien - tienGiamTuDiem;
-
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -197,6 +253,7 @@ namespace ConvenienceStore.Web.Controllers
                 var danhSachSanPham = gioHang.Select(x => new SanPhamDatHang
                 {
                     SanPhamId = x.SanPhamId,
+                    ComboId = x.ComboId,
                     SoLuong = x.SoLuong
                 }).ToList();
 
@@ -217,9 +274,6 @@ namespace ConvenienceStore.Web.Controllers
                         donHangId,
                         model.DiemMuonDoi);
                 }
-
-                // Không cộng điểm ở đây.
-                // Điểm chỉ nên cộng khi admin/nhân viên chuyển đơn sang trạng thái Đã giao.
 
                 XoaToanBoGioHang();
 
@@ -263,6 +317,26 @@ namespace ConvenienceStore.Web.Controllers
         private void XoaToanBoGioHang()
         {
             HttpContext.Session.Remove(TenSessionGioHang);
+        }
+
+        private async Task<Combo?> LayComboHopLeAsync(int comboId)
+        {
+            return await _context.Combos
+                .Include(x => x.ComboSanPhams)
+                    .ThenInclude(x => x.SanPham)
+                .FirstOrDefaultAsync(x => x.Id == comboId && x.TrangThai && x.ComboSanPhams.Count >= 2);
+        }
+
+        private static int LaySoLuongComboCoTheBan(Combo combo)
+        {
+            if (!combo.ComboSanPhams.Any())
+                return 0;
+
+            return combo.ComboSanPhams
+                .Where(x => x.SanPham != null && x.SoLuong > 0)
+                .Select(x => x.SanPham!.SoLuongTon / x.SoLuong)
+                .DefaultIfEmpty(0)
+                .Min();
         }
     }
 }

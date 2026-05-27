@@ -454,6 +454,81 @@
     padding: 16px 18px;
 }
 
+/* ===== Theme Quốc tế thiếu nhi 1/6 cho khu vực tài khoản ===== */
+.account-page {
+    background:
+        radial-gradient(circle at 18% 14%, rgba(255, 217, 90, 0.30), transparent 170px),
+        linear-gradient(135deg, #fff8ec, #effff9 60%, #fff2f6);
+}
+
+.account-card,
+.account-sidebar,
+.account-hero,
+.section-card,
+.stat-card,
+.info-item {
+    background: rgba(255, 255, 255, 0.94);
+    border-color: rgba(255, 217, 90, 0.42);
+    box-shadow: 0 18px 40px rgba(38, 48, 68, 0.10);
+}
+
+.account-sidebar-top,
+.account-hero,
+.note-box {
+    background:
+        radial-gradient(circle at 94% 16%, rgba(255, 217, 90, 0.36), transparent 130px),
+        linear-gradient(135deg, #ffffff 0%, #effffb 52%, #fff4f7 100%);
+    color: #263044;
+    border-color: rgba(255, 217, 90, 0.46);
+}
+
+.account-title,
+.section-title,
+.stat-value,
+.stat-link,
+.info-value,
+.order-code {
+    color: #263044;
+}
+
+.account-subtitle,
+.section-subtitle,
+.account-user-email,
+.info-label {
+    color: #697386;
+}
+
+.account-menu-item.active {
+    background: linear-gradient(135deg, #fff4cf, #e9fff8);
+    border-color: rgba(255, 217, 90, 0.68);
+}
+
+.account-menu-item.active i,
+.account-menu-item:hover i,
+.stat-link:hover {
+    color: #e94f55;
+}
+
+.soft-btn,
+.primary-btn {
+    border-color: rgba(77, 163, 255, 0.35);
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ff8f70 48%, #ffd95a);
+    box-shadow: 0 12px 24px rgba(255, 107, 107, 0.24);
+}
+
+.table-modern thead th {
+    background: #fff4cf;
+    color: #74511b;
+    border-bottom-color: rgba(255, 217, 90, 0.70);
+}
+
+.table-modern tbody tr:hover {
+    background: #fffdf4;
+}
+
 /* ===== Detail order ===== */
 .info-grid {
     display: grid;

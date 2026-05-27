@@ -6,6 +6,7 @@ namespace ConvenienceStore.Web.ViewModels
     {
         public List<DanhMuc> DanhSachDanhMuc { get; set; } = new();
         public List<SanPham> DanhSachFlashSale { get; set; } = new();
+        public List<Combo> DanhSachComboFlashSale { get; set; } = new();
         public List<SanPham> DanhSachSanPhamMoi { get; set; } = new();
     }
 }

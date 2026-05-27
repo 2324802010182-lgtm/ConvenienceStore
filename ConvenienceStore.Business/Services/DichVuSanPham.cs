@@ -76,6 +76,9 @@ namespace ConvenienceStore.Business.Services
             sanPhamCu.HinhAnh = sanPhamMoi.HinhAnh;
             sanPhamCu.DanhMucId = sanPhamMoi.DanhMucId;
             sanPhamCu.TrangThai = sanPhamMoi.TrangThai;
+            sanPhamCu.PhanTramGiam = sanPhamMoi.PhanTramGiam;
+            sanPhamCu.NgayBatDauKhuyenMai = sanPhamMoi.NgayBatDauKhuyenMai;
+            sanPhamCu.NgayKetThucKhuyenMai = sanPhamMoi.NgayKetThucKhuyenMai;
 
             await _donViCongViec.LuuThayDoiAsync();
         }

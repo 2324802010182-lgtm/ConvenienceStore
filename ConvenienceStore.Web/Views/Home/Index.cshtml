@@ -28,7 +28,7 @@
         <div id="bannerChinh" class="carousel slide main-banner-carousel" data-bs-ride="carousel" data-bs-interval="3000">
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img src="~/images/banner-1.jpg" class="d-block w-100" alt="Khuyến mãi đồ uống" />
+                    <img src="~/images/banner-thieu-nhi-1-6.png" class="d-block w-100" alt="Khuyến mãi Quốc tế thiếu nhi 1/6" />
                 </div>
                 <div class="carousel-item">
                     <img src="~/images/banner-2.jpg" class="d-block w-100" alt="Chương trình quà tặng" />
@@ -47,14 +47,79 @@
         <section class="home-section flash-sale-section">
             <div class="section-heading-row">
                 <div>
-                    <h3 class="section-title flash-sale-title">⚡ Flash Sale</h3>
-                    <p class="flash-sale-subtitle mb-0">Sản phẩm đang giảm giá cực hấp dẫn</p>
+                    <h3 class="section-title flash-sale-title">
+                        <i class="fa-solid fa-bolt"></i>
+                        Flash Sale
+                    </h3>
                 </div>
             </div>
 
-            @if (Model.DanhSachFlashSale.Any())
+            @if (Model.DanhSachComboFlashSale.Any() || Model.DanhSachFlashSale.Any())
             {
                 <div class="product-row">
+                    @foreach (var combo in Model.DanhSachComboFlashSale)
+                    {
+                        var duongDanAnhCombo = "/images/no-image.png";
+                        var anhCombo = combo.HinhAnh ?? combo.ComboSanPhams.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.SanPham?.HinhAnh))?.SanPham?.HinhAnh;
+
+                        if (!string.IsNullOrWhiteSpace(anhCombo))
+                        {
+                            if (anhCombo.StartsWith("http://") || anhCombo.StartsWith("https://"))
+                            {
+                                duongDanAnhCombo = anhCombo;
+                            }
+                            else if (anhCombo.StartsWith("/images/"))
+                            {
+                                duongDanAnhCombo = anhCombo;
+                            }
+                            else
+                            {
+                                duongDanAnhCombo = "/images/" + anhCombo;
+                            }
+                        }
+
+                        <div class="product-card flash-sale-card combo-sale-card">
+                            <div class="flash-sale-badge">COMBO</div>
+
+                            <div class="product-image">
+                                <a asp-controller="SanPhamKhach" asp-action="ChiTietCombo" asp-route-id="@combo.Id">
+                                    <img src="@duongDanAnhCombo" alt="@combo.TenCombo" />
+                                </a>
+                            </div>
+
+                            <div class="product-body">
+                                <a asp-controller="SanPhamKhach"
+                                   asp-action="ChiTietCombo"
+                                   asp-route-id="@combo.Id"
+                                   class="product-name product-name-link">
+                                    @combo.TenCombo
+                                </a>
+
+                                <div class="combo-product-summary">
+                                    @string.Join(" + ", combo.ComboSanPhams.Select(x => x.SanPham?.TenSanPham).Where(x => !string.IsNullOrWhiteSpace(x)))
+                                </div>
+
+                                <div class="price-wrap flex-column align-items-start">
+                                    <span class="flash-sale-price">@combo.GiaCombo.ToString("N0") đ</span>
+                                    @if (combo.GiaGoc > combo.GiaCombo)
+                                    {
+                                        <span class="old-price">@combo.GiaGoc.ToString("N0") đ</span>
+                                    }
+                                </div>
+
+                                <div class="delivery-text">
+                                    <i class="fa-solid fa-bolt"></i> Đang khuyến mãi
+                                </div>
+                            </div>
+
+                            <form asp-controller="GioHang" asp-action="ThemComboVaoGio" method="post">
+                                <input type="hidden" name="comboId" value="@combo.Id" />
+                                <input type="hidden" name="soLuong" value="1" />
+                                <button type="submit" class="add-btn">+</button>
+                            </form>
+                        </div>
+                    }
+
                     @foreach (var item in Model.DanhSachFlashSale)
                     {
                         var duongDanAnh = "/images/no-image.png";
@@ -117,7 +182,7 @@
 
         <section class="home-section">
             <div class="section-heading-row">
-                <h3 class="section-title">Sản phẩm mới</h3>
+                <h3 class="section-title">Món ngon cho ngày vui</h3>
                 <a asp-controller="SanPhamKhach" asp-action="Index" class="btn admin-secondary-btn">Xem tất cả</a>
             </div>
 
@@ -166,9 +231,6 @@
                                 </div>
                             }
 
-                            <div class="delivery-text">
-                                <i class="fa-solid fa-box"></i> Còn @item.SoLuongTon sản phẩm
-                            </div>
                         </div>
 
                         <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post">

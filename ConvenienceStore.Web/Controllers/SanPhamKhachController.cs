@@ -1,8 +1,10 @@
 ﻿using ConvenienceStore.Business.Interfaces;
+using ConvenienceStore.DataAccess;
 using ConvenienceStore.Models.Entities;
 using ConvenienceStore.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace ConvenienceStore.Web.Controllers
@@ -11,13 +13,16 @@ namespace ConvenienceStore.Web.Controllers
     {
         private readonly IDichVuSanPham _dichVuSanPham;
         private readonly IDichVuDanhGiaSanPham _dichVuDanhGiaSanPham;
+        private readonly ApplicationDbContext _context;
 
         public SanPhamKhachController(
             IDichVuSanPham dichVuSanPham,
-            IDichVuDanhGiaSanPham dichVuDanhGiaSanPham)
+            IDichVuDanhGiaSanPham dichVuDanhGiaSanPham,
+            ApplicationDbContext context)
         {
             _dichVuSanPham = dichVuSanPham;
             _dichVuDanhGiaSanPham = dichVuDanhGiaSanPham;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -76,6 +81,20 @@ namespace ConvenienceStore.Web.Controllers
             };
 
             return View(model);
+        }
+
+        public async Task<IActionResult> ChiTietCombo(int id)
+        {
+            var combo = await _context.Combos
+                .Include(x => x.ComboSanPhams)
+                    .ThenInclude(x => x.SanPham)
+                        .ThenInclude(x => x!.DanhMuc)
+                .FirstOrDefaultAsync(x => x.Id == id && x.TrangThai && x.ComboSanPhams.Count >= 2);
+
+            if (combo == null)
+                return NotFound();
+
+            return View(combo);
         }
 
         [Authorize]

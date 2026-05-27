@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ConvenienceStore.Web.ViewModels.KhuyenMaiViewModel>
+@model ConvenienceStore.Web.ViewModels.QuanLyKhuyenMaiViewModel
 
 @{
     ViewData["Title"] = "Khuyến mãi";
@@ -8,8 +8,11 @@
 <div class="admin-page-header">
     <div>
         <h2>Quản lý khuyến mãi</h2>
-        <p>Thiết lập giảm giá cho sản phẩm</p>
+        <p>Thiết lập giảm giá sản phẩm và combo bán chung</p>
     </div>
+    <a asp-action="Combo" class="btn admin-primary-btn">
+        <i class="fa-solid fa-layer-group"></i> Tạo combo
+    </a>
 </div>
 
 @if (TempData["ThanhCong"] != null)
@@ -17,7 +20,91 @@
     <div class="alert alert-success">@TempData["ThanhCong"]</div>
 }
 
+<div class="admin-table-card mb-4">
+    <div class="section-heading-row mb-3">
+        <div>
+            <h3 class="section-title mb-1">Combo</h3>
+            <p class="text-muted mb-0">Gộp nhiều sản phẩm và đặt một giá bán chung</p>
+        </div>
+    </div>
+
+    <table class="table admin-table align-middle">
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên combo</th>
+                <th>Sản phẩm trong combo</th>
+                <th>Giá gốc</th>
+                <th>Giá combo</th>
+                <th>Tiết kiệm</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.DanhSachCombo.Any())
+            {
+                @foreach (var combo in Model.DanhSachCombo)
+                {
+                    <tr>
+                        <td>@combo.Id</td>
+                        <td><strong>@combo.TenCombo</strong></td>
+                        <td style="max-width:360px;">@combo.DanhSachSanPham</td>
+                        <td>@combo.GiaGoc.ToString("N0") đ</td>
+                        <td><strong>@combo.GiaCombo.ToString("N0") đ</strong></td>
+                        <td>
+                            @if (combo.PhanTramTietKiem > 0)
+                            {
+                                <span class="status-badge status-warning">-@combo.PhanTramTietKiem%</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">Không</span>
+                            }
+                        </td>
+                        <td>
+                            @if (combo.TrangThai)
+                            {
+                                <span class="status-badge status-active">Đang bán</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-inactive">Tạm ngưng</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="Combo" asp-route-id="@combo.Id" class="btn admin-warning-btn btn-sm">Sửa</a>
+                            <form asp-action="DoiTrangThaiCombo" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@combo.Id" />
+                                <button type="submit" class="btn admin-secondary-btn btn-sm">
+                                    @(combo.TrangThai ? "Tạm ngưng" : "Bật lại")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        Chưa có combo nào. Hãy bấm <strong>Tạo combo</strong> để bắt đầu.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
 <div class="admin-table-card">
+    <div class="section-heading-row mb-3">
+        <div>
+            <h3 class="section-title mb-1">Khuyến mãi sản phẩm</h3>
+            <p class="text-muted mb-0">Thiết lập giảm giá cho từng sản phẩm</p>
+        </div>
+    </div>
+
     <table class="table admin-table align-middle">
         <thead>
             <tr>
@@ -32,7 +119,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @foreach (var item in Model.DanhSachSanPham)
             {
                 <tr>
                     <td>@item.Id</td>

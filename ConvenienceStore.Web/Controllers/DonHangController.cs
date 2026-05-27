@@ -69,7 +69,7 @@ namespace ConvenienceStore.Web.Controllers
 
                 DanhSachSanPham = donHang.ChiTietDonHangs?.Select(ct => new ChiTietSanPhamTrongDonViewModel
                 {
-                    TenSanPham = ct.SanPham != null ? ct.SanPham.TenSanPham : "",
+                    TenSanPham = !string.IsNullOrWhiteSpace(ct.TenHienThi) ? ct.TenHienThi : (ct.SanPham != null ? ct.SanPham.TenSanPham : ""),
                     SoLuong = ct.SoLuong,
                     DonGia = ct.DonGia,
                     ThanhTien = ct.ThanhTien
