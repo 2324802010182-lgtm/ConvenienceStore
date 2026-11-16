@@ -55,7 +55,7 @@
 
           
 
-                @if (User.IsInRole(VaiTro.Admin))
+                @if (User.IsInRole(VaiTro.Admin) || User.IsInRole(VaiTro.NhanVien))
                 {
                     <a href="/QuanTri" class="account-btn admin-dashboard-btn" title="Quản trị hệ thống">
                         <i class="fa-solid fa-chart-line"></i>
@@ -168,6 +168,7 @@
     </footer>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/security-deterrents.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

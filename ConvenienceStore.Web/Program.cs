@@ -1,17 +1,13 @@
 using ConvenienceStore.Business.Interfaces;
-using ConvenienceStore.Business.Interfaces;
-using ConvenienceStore.Business.Services;
 using ConvenienceStore.Business.Services;
 using ConvenienceStore.DataAccess;
 using ConvenienceStore.DataAccess.UnitOfWork;
-using ConvenienceStore.Models.Entities;
 using ConvenienceStore.Models.Entities;
 using ConvenienceStore.Models.HangSo;
 using ConvenienceStore.Web.DuLieuKhoiTao;
 using ConvenienceStore.Web.Hubs;
 using ConvenienceStore.Web.Services;
 using ConvenienceStore.Web.ViewModels;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
@@ -25,11 +21,17 @@ builder.Services.AddIdentity<NguoiDung, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 12;
+    options.Password.RequiredUniqueChars = 4;
 
     options.User.RequireUniqueEmail = true;
+
+    // Khoa tai khoan sau 5 lan dang nhap sai lien tiep.
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromSeconds(30);
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -50,6 +52,12 @@ builder.Services.AddScoped<IDichVuSanPham, DichVuSanPham>();
 builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<RecaptchaSettings>(
+    builder.Configuration.GetSection("Recaptcha"));
+builder.Services.AddHttpClient<IRecaptchaVerificationService, RecaptchaVerificationService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
 builder.Services.AddScoped<IDichVuDanhGiaSanPham, DichVuDanhGiaSanPham>();
 builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
 builder.Services.AddControllersWithViews();

@@ -192,9 +192,12 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     <script>
         window.addEventListener("load", function () {
             const chatBox = document.getElementById("chatMessages");
+            const hoiThoaiId = @Model.Id;
+
             if (chatBox) {
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
@@ -210,6 +213,63 @@
                         fileName.textContent = "Chưa chọn ảnh";
                     }
                 });
+            }
+
+            if (chatBox) {
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/chatOnlineHub")
+                    .build();
+
+                connection.on("NhanTinNhanMoi", function (data) {
+                    if (!data || data.hoiThoaiId !== hoiThoaiId) {
+                        return;
+                    }
+
+                    const messageHtml = createChatMessageHtml(data);
+                    chatBox.insertAdjacentHTML("beforeend", messageHtml);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                });
+
+                connection.start()
+                    .then(function () {
+                        return connection.invoke("ThamGiaHoiThoai", "CHAT_" + hoiThoaiId);
+                    })
+                    .catch(function (err) {
+                        console.error(err.toString());
+                    });
+            }
+
+            function createChatMessageHtml(data) {
+                const isMine = data.laQuanTri === false;
+                const sender = data.nguoiGui || (isMine ? "Bạn" : "Hỗ trợ viên");
+                const role = isMine ? "Khách hàng" : "Hỗ trợ viên";
+                const bubbleClass = isMine ? "chat-bubble-me" : "chat-bubble-other";
+                const rowClass = isMine ? "chat-row-me" : "chat-row-other";
+                const contentHtml = data.noiDung ? `<div class="chat-message-content">${escapeHtml(data.noiDung)}</div>` : "";
+
+                return `
+                    <div class="chat-row ${rowClass}">
+                        <div class="chat-bubble ${bubbleClass}">
+                            <div class="chat-bubble-head">
+                                <div class="chat-user-meta">
+                                    <div class="chat-user-name">${escapeHtml(sender)}</div>
+                                    <div class="chat-user-role">${escapeHtml(role)}</div>
+                                </div>
+                                <div class="chat-time">${escapeHtml(data.thoiGian || "")}</div>
+                            </div>
+                            ${contentHtml}
+                        </div>
+                    </div>`;
+            }
+
+            function escapeHtml(text) {
+                if (!text) return "";
+                return text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             }
         });
     </script>

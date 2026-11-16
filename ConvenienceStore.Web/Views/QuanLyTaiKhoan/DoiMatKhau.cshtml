@@ -25,6 +25,8 @@
                         <div class="alert alert-success rounded-4">@TempData["ThanhCong"]</div>
                     }
 
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+
                     <div class="form-shell">
                         <div class="note-box mb-4">
                             <i class="fa-solid fa-shield-halved me-2"></i>
