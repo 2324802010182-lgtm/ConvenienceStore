@@ -12,6 +12,11 @@
     <ProjectReference Include="..\ConvenienceStore.Models\ConvenienceStore.Models.csproj" />
   </ItemGroup>
 
+  <!-- Compile the five standalone Member 2 security modules from the repository root folder. -->
+  <ItemGroup>
+    <Compile Include="..\baomatbackend\*.cs" Link="BaoMatBackend\%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="MailKit" Version="4.18.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.34" />

@@ -11,7 +11,12 @@
             <p>Chào mừng bạn quay lại cửa hàng tiện lợi</p>
         </div>
 
-        <form asp-action="DangNhap" method="post">
+        @if (TempData["ThongBao"] != null)
+        {
+            <div class="alert alert-success">@TempData["ThongBao"]</div>
+        }
+
+        <form asp-action="DangNhap" method="post" id="loginForm">
             <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -62,5 +67,8 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="https://www.google.com/recaptcha/enterprise.js" async defer></script>
+    @if (!string.IsNullOrWhiteSpace(ViewBag.RecaptchaSiteKey as string))
+    {
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    }
 }

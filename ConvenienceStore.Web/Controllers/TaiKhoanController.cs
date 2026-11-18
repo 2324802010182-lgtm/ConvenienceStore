@@ -11,6 +11,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using BaoMatBackend.Captcha;
+using BaoMatBackend.TwoFactor;
+using BaoMatBackend.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ConvenienceStore.Web.Controllers
 {
@@ -20,8 +24,9 @@ namespace ConvenienceStore.Web.Controllers
         private readonly SignInManager<NguoiDung> _signInManager;
         private readonly IDichVuEmail _dichVuEmail;
         private readonly ILogger<TaiKhoanController> _logger;
-        private readonly IRecaptchaVerificationService _recaptchaService;
-        private readonly RecaptchaSettings _recaptchaSettings;
+        private readonly IRecaptchaV2Verifier _recaptchaService;
+        private readonly RecaptchaOptions _recaptchaSettings;
+        private readonly IEmailOtpService _emailOtpService;
 
         private const string TrustedDeviceCookieName = "ConvenienceStore.TrustedDevice";
         private const string TrustedDeviceLoginProvider = "ConvenienceStore.Security";
@@ -33,8 +38,9 @@ namespace ConvenienceStore.Web.Controllers
             SignInManager<NguoiDung> signInManager,
             IDichVuEmail dichVuEmail,
             ILogger<TaiKhoanController> logger,
-            IRecaptchaVerificationService recaptchaService,
-            IOptions<RecaptchaSettings> recaptchaSettings)
+            IRecaptchaV2Verifier recaptchaService,
+            IOptions<RecaptchaOptions> recaptchaSettings,
+            IEmailOtpService emailOtpService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -42,6 +48,7 @@ namespace ConvenienceStore.Web.Controllers
             _logger = logger;
             _recaptchaService = recaptchaService;
             _recaptchaSettings = recaptchaSettings.Value;
+            _emailOtpService = emailOtpService;
         }
 
         [HttpGet]
@@ -81,8 +88,8 @@ namespace ConvenienceStore.Web.Controllers
             if (ketQua.Succeeded)
             {
                 await _userManager.AddToRoleAsync(nguoiDung, VaiTro.KhachHang);
-                await _signInManager.SignInAsync(nguoiDung, isPersistent: false);
-                return RedirectToAction("Index", "Home");
+                TempData["ThongBao"] = "Đăng ký thành công. Vui lòng đăng nhập và xác thực OTP qua email.";
+                return RedirectToAction(nameof(DangNhap));
             }
 
             foreach (var loi in ketQua.Errors)
@@ -104,10 +111,11 @@ namespace ConvenienceStore.Web.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting(RateLimitingConfiguration.LoginPolicy)]
         public async Task<IActionResult> DangNhap(
             DangNhapViewModel model,
             string? returnUrl = null,
-            [FromForm(Name = "g-recaptcha-response")] string? recaptchaResponse = null)
+            [FromForm(Name = "g-recaptcha-response")] string? recaptchaToken = null)
         {
             if (!ModelState.IsValid)
             {
@@ -122,17 +130,15 @@ namespace ConvenienceStore.Web.Controllers
                 return View(model);
             }
 
-            var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var captchaHopLe = await _recaptchaService.VerifyAsync(
-                recaptchaResponse,
-                remoteIp,
-                Request.Headers.UserAgent.ToString(),
+            var captchaResult = await _recaptchaService.VerifyAsync(
+                recaptchaToken,
+                HttpContext.Connection.RemoteIpAddress?.ToString(),
                 Request.Host.Host,
                 HttpContext.RequestAborted);
 
-            if (!captchaHopLe)
+            if (!captchaResult.Success)
             {
-                ModelState.AddModelError("", "Vui lòng xác nhận reCAPTCHA hợp lệ trước khi đăng nhập.");
+                ModelState.AddModelError("", captchaResult.Reason);
                 GanDuLieuTrangDangNhap(returnUrl);
                 return View(model);
             }
@@ -168,33 +174,29 @@ namespace ConvenienceStore.Web.Controllers
                 return View(model);
             }
 
-            var ketQua = await _signInManager.PasswordSignInAsync(
-                nguoiDung.UserName!,
-                model.MatKhau,
-                model.GhiNhoDangNhap,
-                lockoutOnFailure: true);
+            // Check the password without issuing an authentication cookie. OTP is mandatory
+            // and the actual sign-in happens only after the second factor is verified.
+            var ketQua = await _signInManager.CheckPasswordSignInAsync(
+                nguoiDung, model.MatKhau, lockoutOnFailure: true);
 
             if (ketQua.Succeeded)
             {
-                // Dang nhap thanh cong se xoa cap khoa tang dan va Identity tu reset dem sai.
-                await _userManager.RemoveAuthenticationTokenAsync(
-                    nguoiDung,
-                    ProgressiveLockoutLoginProvider,
-                    ProgressiveLockoutStageTokenName);
-
-                // Chỉ gửi cảnh báo sau khi thông tin đăng nhập đã được xác thực thành công.
-                await KiemTraThietBiMoiVaGuiCanhBaoAsync(nguoiDung);
-
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return Redirect(returnUrl);
-
-                if (await _userManager.IsInRoleAsync(nguoiDung, VaiTro.Admin) ||
-                    await _userManager.IsInRoleAsync(nguoiDung, VaiTro.NhanVien))
+                try
                 {
-                    return RedirectToAction("Index", "QuanTri");
+                    await _emailOtpService.SendAsync(nguoiDung.Id, nguoiDung.Email!, HttpContext.RequestAborted);
+                    HttpContext.Session.SetString("PendingLogin2FAUserId", nguoiDung.Id);
+                    HttpContext.Session.SetString("PendingLogin2FAIssuedAt", DateTimeOffset.UtcNow.ToString("O"));
+                    HttpContext.Session.SetString("PendingLogin2FAReturnUrl", returnUrl ?? string.Empty);
+                    HttpContext.Session.SetString("PendingLogin2FARememberMe", model.GhiNhoDangNhap.ToString());
+                    return RedirectToAction(nameof(XacNhanOtpDangNhap));
                 }
-
-                return RedirectToAction("Index", "Home");
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Could not issue login OTP for UserId {UserId}.", nguoiDung.Id);
+                    ModelState.AddModelError("", "Không thể gửi mã OTP. Vui lòng thử lại sau.");
+                    GanDuLieuTrangDangNhap(returnUrl);
+                    return View(model);
+                }
             }
 
             if (ketQua.IsLockedOut)
@@ -206,61 +208,112 @@ namespace ConvenienceStore.Web.Controllers
                 if (!capNhatKhoa.Succeeded)
                     _logger.LogError("Could not set progressive lockout end for UserId {UserId}.", nguoiDung.Id);
 
-                ModelState.AddModelError("", $"Bạn đã nhập sai mật khẩu 5 lần. Tài khoản bị khóa {Math.Ceiling(lockoutDuration.TotalSeconds)} giây.");
+                ModelState.AddModelError("", $"Bạn đã nhập sai mật khẩu 3 lần. Tài khoản bị khóa {Math.Ceiling(lockoutDuration.TotalSeconds)} giây.");
                 GanDuLieuTrangDangNhap(returnUrl);
                 return View(model);
             }
 
             var soLanSai = await _userManager.GetAccessFailedCountAsync(nguoiDung);
-            var soLanConLai = Math.Max(0, 5 - soLanSai);
-            ModelState.AddModelError("", $"Email hoặc mật khẩu không đúng. Bạn còn {soLanConLai} lần thử trước khi tài khoản bị khóa 30 giây.");
+            var soLanConLai = Math.Max(0, 3 - soLanSai);
+            ModelState.AddModelError("", $"Email hoặc mật khẩu không đúng. Bạn còn {soLanConLai} lần thử trước khi tài khoản bị khóa 20 giây.");
             GanDuLieuTrangDangNhap(returnUrl);
             return View(model);
         }
 
         private const string ProgressiveLockoutLoginProvider = "ConvenienceStore.Security";
         private const string ProgressiveLockoutStageTokenName = "ProgressiveLoginLockoutStageV1";
-        private const long MaximumLockoutSeconds = 24 * 60 * 60;
 
-        private async Task<TimeSpan> TinhThoiGianKhoaTiepTheoAsync(NguoiDung nguoiDung)
-        {
-            var stageValue = await _userManager.GetAuthenticationTokenAsync(
-                nguoiDung,
-                ProgressiveLockoutLoginProvider,
-                ProgressiveLockoutStageTokenName);
-
-            var stage = int.TryParse(stageValue, out var parsedStage)
-                ? Math.Clamp(parsedStage, 0, 20)
-                : 0;
-
-            long seconds = 30;
-            for (var i = 0; i < stage && seconds < MaximumLockoutSeconds; i++)
-                seconds = Math.Min(seconds * 2, MaximumLockoutSeconds);
-
-            var nextStage = Math.Min(stage + 1, 20);
-            var saved = await _userManager.SetAuthenticationTokenAsync(
-                nguoiDung,
-                ProgressiveLockoutLoginProvider,
-                ProgressiveLockoutStageTokenName,
-                nextStage.ToString());
-
-            if (!saved.Succeeded)
-                _logger.LogError("Could not save progressive lockout stage for UserId {UserId}.", nguoiDung.Id);
-
-            return TimeSpan.FromSeconds(seconds);
-        }
+        private static Task<TimeSpan> TinhThoiGianKhoaTiepTheoAsync(NguoiDung nguoiDung)
+            => Task.FromResult(TimeSpan.FromSeconds(20));
 
         private void GanDuLieuTrangDangNhap(string? returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
-            ViewBag.RecaptchaSiteKey = _recaptchaSettings.SiteKey;
+            // Only render the checkbox when both the public Site Key and server-side
+            // Secret Key are configured; otherwise the form clearly reports setup is pending.
+            ViewBag.RecaptchaSiteKey = _recaptchaService.IsConfigured
+                ? _recaptchaSettings.SiteKey
+                : string.Empty;
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult XacNhanOtpDangNhap()
+        {
+            if (!CoPhienOtpDangNhap())
+                return RedirectToAction(nameof(DangNhap));
+            return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        [EnableRateLimiting(RateLimitingConfiguration.OtpPolicy)]
+        public async Task<IActionResult> XacNhanOtpDangNhap([FromForm] string otp)
+        {
+            if (!CoPhienOtpDangNhap())
+            {
+                XoaTrangThaiOtpDangNhap();
+                return RedirectToAction(nameof(DangNhap));
+            }
+            var userId = HttpContext.Session.GetString("PendingLogin2FAUserId");
+            var issuedText = HttpContext.Session.GetString("PendingLogin2FAIssuedAt");
+            if (string.IsNullOrWhiteSpace(userId) || !DateTimeOffset.TryParse(issuedText, out var issuedAt) ||
+                DateTimeOffset.UtcNow - issuedAt > TimeSpan.FromMinutes(5))
+            {
+                XoaTrangThaiOtpDangNhap();
+                ModelState.AddModelError("", "Phiên xác thực OTP đã hết hạn. Vui lòng đăng nhập lại.");
+                return View();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null || await _userManager.IsLockedOutAsync(user))
+            {
+                XoaTrangThaiOtpDangNhap();
+                ModelState.AddModelError("", "Không thể hoàn tất đăng nhập. Vui lòng đăng nhập lại.");
+                return View();
+            }
+
+            if (!await _emailOtpService.VerifyAsync(userId, otp, HttpContext.RequestAborted))
+            {
+                ModelState.AddModelError("", "Mã OTP không đúng, đã hết hạn hoặc vượt quá số lần thử.");
+                return View();
+            }
+
+            // Second factor verified: issue the authentication cookie now.
+            var returnUrl = HttpContext.Session.GetString("PendingLogin2FAReturnUrl");
+            var rememberMe = bool.TryParse(HttpContext.Session.GetString("PendingLogin2FARememberMe"), out var persistent) && persistent;
+            await _signInManager.SignInAsync(user, isPersistent: rememberMe);
+            XoaTrangThaiOtpDangNhap();
+            await _userManager.RemoveAuthenticationTokenAsync(user, ProgressiveLockoutLoginProvider, ProgressiveLockoutStageTokenName);
+            await KiemTraThietBiMoiVaGuiCanhBaoAsync(user);
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
+            if (await _userManager.IsInRoleAsync(user, VaiTro.Admin) || await _userManager.IsInRoleAsync(user, VaiTro.NhanVien))
+                return RedirectToAction("Index", "QuanTri");
+            return RedirectToAction("Index", "Home");
+        }
+
+        private void XoaTrangThaiOtpDangNhap()
+        {
+            HttpContext.Session.Remove("PendingLogin2FAUserId");
+            HttpContext.Session.Remove("PendingLogin2FAIssuedAt");
+            HttpContext.Session.Remove("PendingLogin2FAReturnUrl");
+            HttpContext.Session.Remove("PendingLogin2FARememberMe");
+        }
+
+        private bool CoPhienOtpDangNhap() =>
+            !string.IsNullOrWhiteSpace(HttpContext.Session.GetString("PendingLogin2FAUserId")) &&
+            DateTimeOffset.TryParse(HttpContext.Session.GetString("PendingLogin2FAIssuedAt"), out var issuedAt) &&
+            DateTimeOffset.UtcNow - issuedAt <= TimeSpan.FromMinutes(5);
+
+        [HttpPost]
         [Authorize]
-        public async Task<IActionResult> DangXuat()
+        public async Task<IActionResult> DangXuat(string? reason = null)
         {
             await _signInManager.SignOutAsync();
+            if (string.Equals(reason, "timeout", StringComparison.OrdinalIgnoreCase))
+                return RedirectToAction(nameof(DangNhap), new { reason = "timeout" });
             return RedirectToAction("Index", "Home");
         }
 
