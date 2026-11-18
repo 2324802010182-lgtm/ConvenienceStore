@@ -1,7 +1,6 @@
-﻿using System.Net;
-using System.Net.Mail;
-
-using ConvenienceStore.Web.ViewModels;
+﻿using ConvenienceStore.Web.ViewModels;
+using MailKit.Security;
+using MimeKit;
 using Microsoft.Extensions.Options;
 
 namespace ConvenienceStore.Web.Services
@@ -17,23 +16,37 @@ namespace ConvenienceStore.Web.Services
 
         public async Task GuiEmailAsync(string emailNhan, string tieuDe, string noiDungHtml)
         {
-            using var mailMessage = new MailMessage
+            if (string.IsNullOrWhiteSpace(_emailSettings.SenderEmail) ||
+                string.IsNullOrWhiteSpace(_emailSettings.Password) ||
+                string.IsNullOrWhiteSpace(_emailSettings.Host) ||
+                _emailSettings.Port <= 0)
             {
-                From = new MailAddress(_emailSettings.Email, _emailSettings.DisplayName),
-                Subject = tieuDe,
-                Body = noiDungHtml,
-                IsBodyHtml = true
-            };
+                throw new InvalidOperationException(
+                    "Cấu hình Email chưa đầy đủ. Hãy thiết lập EmailSettings:Password bằng User Secrets hoặc biến môi trường.");
+            }
 
-            mailMessage.To.Add(emailNhan);
-
-            using var smtpClient = new SmtpClient(_emailSettings.Host, _emailSettings.Port)
+            var mailMessage = new MimeMessage();
+            mailMessage.From.Add(new MailboxAddress(
+                _emailSettings.DisplayName,
+                _emailSettings.SenderEmail));
+            mailMessage.To.Add(MailboxAddress.Parse(emailNhan));
+            mailMessage.Subject = tieuDe;
+            mailMessage.Body = new BodyBuilder
             {
-                Credentials = new NetworkCredential(_emailSettings.Email, _emailSettings.Password),
-                EnableSsl = true
-            };
+                HtmlBody = noiDungHtml,
+                TextBody = "Vui lòng mở email bằng ứng dụng hỗ trợ HTML để xem đầy đủ nội dung."
+            }.ToMessageBody();
 
-            await smtpClient.SendMailAsync(mailMessage);
+            using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+            await smtpClient.ConnectAsync(
+                _emailSettings.Host,
+                _emailSettings.Port,
+                SecureSocketOptions.StartTls);
+            await smtpClient.AuthenticateAsync(
+                _emailSettings.SenderEmail,
+                _emailSettings.Password);
+            await smtpClient.SendAsync(mailMessage);
+            await smtpClient.DisconnectAsync(true);
         }
     }
 }

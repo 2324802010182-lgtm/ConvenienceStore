@@ -155,10 +155,12 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     <script>
-        // Hiển thị tên file ảnh đã chọn
         const tepHinhAnh = document.getElementById("tepHinhAnh");
         const tenFileDaChon = document.getElementById("tenFileDaChon");
+        const adminChatBody = document.getElementById("adminChatBody");
+        const hoiThoaiId = @Model.HoiThoai.Id;
 
         if (tepHinhAnh && tenFileDaChon) {
             tepHinhAnh.addEventListener("change", function () {
@@ -170,10 +172,62 @@
             });
         }
 
-        // Tự cuộn xuống cuối khung chat
-        const adminChatBody = document.getElementById("adminChatBody");
         if (adminChatBody) {
             adminChatBody.scrollTop = adminChatBody.scrollHeight;
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/chatOnlineHub")
+                .build();
+
+            connection.on("NhanTinNhanMoi", function (data) {
+                if (!data || data.hoiThoaiId !== hoiThoaiId) {
+                    return;
+                }
+
+                const messageHtml = createAdminMessageHtml(data);
+                adminChatBody.insertAdjacentHTML("beforeend", messageHtml);
+                adminChatBody.scrollTop = adminChatBody.scrollHeight;
+            });
+
+            connection.start()
+                .then(function () {
+                    return connection.invoke("ThamGiaHoiThoai", "CHAT_" + hoiThoaiId);
+                })
+                .catch(function (err) {
+                    console.error(err.toString());
+                });
+        }
+
+        function createAdminMessageHtml(data) {
+            const isAdmin = data.laQuanTri === true;
+            const sender = data.nguoiGui || (isAdmin ? "Hỗ trợ viên" : "Khách hàng");
+            const role = isAdmin ? "Hỗ trợ viên" : "Khách hàng";
+            const rowClass = isAdmin ? "mine" : "other";
+            const messageText = data.noiDung ? `<div class="admin-chat-message-text">${escapeHtml(data.noiDung)}</div>` : "";
+
+            return `
+                <div class="admin-chat-row ${rowClass}">
+                    <div class="admin-chat-bubble">
+                        <div class="admin-chat-bubble-top">
+                            <div class="admin-chat-user">
+                                <div class="admin-chat-user-name">${escapeHtml(sender)}</div>
+                                <div class="admin-chat-user-role">${escapeHtml(role)}</div>
+                            </div>
+                            <div class="admin-chat-time">${escapeHtml(data.thoiGian || "")}</div>
+                        </div>
+                        ${messageText}
+                    </div>
+                </div>`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
     </script>
 }

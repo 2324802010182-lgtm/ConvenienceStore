@@ -1064,9 +1064,14 @@ a {
     font-weight: 700;
 }
 
-.role-admin {
+..role-admin {
     background: #e8f0ff;
     color: #2d5bd1;
+}
+
+.role-employee {
+    background: #eaf6ff;
+    color: #1d4ed8;
 }
 
 .role-customer {

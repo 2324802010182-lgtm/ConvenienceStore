@@ -6,11 +6,11 @@ namespace ConvenienceStore.Web.ViewModels
     {
         [Required(ErrorMessage = "Email khong duoc de trong")]
         [EmailAddress(ErrorMessage = "Email khong hop le")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Mat khau khong duoc de trong")]
         [DataType(DataType.Password)]
-        public string MatKhau { get; set; }
+        public string MatKhau { get; set; } = string.Empty;
 
         public bool GhiNhoDangNhap { get; set; }
     }

@@ -29,8 +29,19 @@ namespace ConvenienceStore.Web.Controllers
             foreach (var nguoiDung in danhSachNguoiDung)
             {
                 var vaiTros = await _userManager.GetRolesAsync(nguoiDung);
-                var vaiTro = vaiTros.FirstOrDefault() ?? VaiTro.KhachHang;
-
+            var vaiTro = VaiTro.KhachHang;
+            if (vaiTros.Contains(VaiTro.Admin))
+            {
+                vaiTro = VaiTro.Admin;
+            }
+            else if (vaiTros.Contains(VaiTro.NhanVien))
+            {
+                vaiTro = VaiTro.NhanVien;
+            }
+            else if (vaiTros.Count > 0)
+            {
+                vaiTro = vaiTros.First();
+            }
                 bool biKhoa = nguoiDung.LockoutEnd.HasValue && nguoiDung.LockoutEnd > DateTimeOffset.Now;
 
                 ketQua.Add(new NguoiDungAdminViewModel

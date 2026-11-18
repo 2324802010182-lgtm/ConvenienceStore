@@ -20,17 +20,20 @@ namespace ConvenienceStore.Web.Controllers
         private readonly SignInManager<NguoiDung> _signInManager;
         private readonly IDichVuDonHang _dichVuDonHang;
         private readonly IDichVuEmail _dichVuEmail;
+        private readonly ILogger<QuanLyTaiKhoanController> _logger;
 
         public QuanLyTaiKhoanController(
             UserManager<NguoiDung> userManager,
             SignInManager<NguoiDung> signInManager,
             IDichVuDonHang dichVuDonHang,
-            IDichVuEmail dichVuEmail)
+            IDichVuEmail dichVuEmail,
+            ILogger<QuanLyTaiKhoanController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _dichVuDonHang = dichVuDonHang;
             _dichVuEmail = dichVuEmail;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -240,35 +243,152 @@ namespace ConvenienceStore.Web.Controllers
             if (nguoiDung == null)
                 return Challenge();
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(nguoiDung);
-            var tokenMaHoa = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            // Generate a short numeric OTP and a password-reset token, store both as user tokens
+            var otp = new Random().Next(100000, 999999).ToString();
 
-            var linkDatLaiMatKhau = Url.Action(
-                "DatLaiMatKhau",
-                "TaiKhoan",
-                new { token = tokenMaHoa, email = nguoiDung.Email },
-                Request.Scheme);
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(nguoiDung);
+            var resetTokenMaHoa = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(resetToken));
+
+            var expiry = DateTime.UtcNow.AddMinutes(10);
+
+            await _userManager.SetAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetOtp", otp);
+            await _userManager.SetAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetToken", resetTokenMaHoa);
+            await _userManager.SetAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetOtpExpiry", expiry.Ticks.ToString());
 
             var noiDung = $@"
                 <h3>Đổi mật khẩu tài khoản</h3>
                 <p>Bạn đã yêu cầu đổi mật khẩu cho tài khoản Convenience Store.</p>
-                <p>Vui lòng bấm vào liên kết bên dưới để tiếp tục:</p>
-                <p>
-                    <a href='{HtmlEncoder.Default.Encode(linkDatLaiMatKhau!)}'>
-                        Đổi mật khẩu ngay
-                    </a>
-                </p>
-                <p>Nếu không bấm được, hãy copy link này vào trình duyệt:</p>
-                <p>{HtmlEncoder.Default.Encode(linkDatLaiMatKhau!)}</p>";
+                <p>Mã xác thực (OTP) của bạn: <strong>{HtmlEncoder.Default.Encode(otp)}</strong></p>
+                <p>Mã có hiệu lực trong 10 phút.</p>";
 
-            await _dichVuEmail.GuiEmailAsync(
-                nguoiDung.Email!,
-                "Xác nhận đổi mật khẩu",
-                noiDung);
+            try
+            {
+                await _dichVuEmail.GuiEmailAsync(
+                    nguoiDung.Email!,
+                    "Mã OTP đổi mật khẩu",
+                    noiDung);
+            }
+            catch (Exception ex)
+            {
+                // Ghi chi tiet loi vao log server, khong hien thi thong tin SMTP nhay cam cho nguoi dung.
+                _logger.LogError(ex, "Khong the gui email OTP doi mat khau cho tai khoan {UserId}.", nguoiDung.Id);
 
-            TempData["ThanhCong"] = "Đã gửi liên kết đổi mật khẩu về email của bạn.";
+                // Huy OTP va reset token chua gui duoc, tranh su dung lai ma khong den hop thu.
+                await _userManager.RemoveAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetOtp");
+                await _userManager.RemoveAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetToken");
+                await _userManager.RemoveAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetOtpExpiry");
 
-            return RedirectToAction(nameof(DoiMatKhau));
+                ModelState.AddModelError("", "Không thể gửi email OTP. Vui lòng kiểm tra cấu hình email và thử lại sau.");
+                var viewModel = new ViewModels.DoiMatKhauTaiKhoanViewModel
+                {
+                    Email = nguoiDung.Email ?? string.Empty
+                };
+                return View("DoiMatKhau", viewModel);
+            }
+
+            return RedirectToAction(nameof(NhapOtpDoiMatKhau));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> NhapOtpDoiMatKhau()
+        {
+            var nguoiDung = await LayNguoiDungHienTaiAsync();
+
+            if (nguoiDung == null)
+                return Challenge();
+
+            var model = new ViewModels.DoiMatKhauOtpViewModel
+            {
+                Email = nguoiDung.Email ?? string.Empty
+            };
+
+            ViewBag.MenuHienTai = "DoiMatKhau";
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XacNhanOtpDoiMatKhau(ViewModels.DoiMatKhauOtpViewModel model)
+        {
+            ViewBag.MenuHienTai = "DoiMatKhau";
+
+            if (!ModelState.IsValid)
+                return View("NhapOtpDoiMatKhau", model);
+
+            var nguoiDung = await LayNguoiDungHienTaiAsync();
+
+            if (nguoiDung == null)
+                return Challenge();
+
+            var storedOtp = await _userManager.GetAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetOtp");
+            var storedToken = await _userManager.GetAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetToken");
+            var expiryTicks = await _userManager.GetAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetOtpExpiry");
+
+            if (string.IsNullOrEmpty(storedOtp) || string.IsNullOrEmpty(storedToken) || string.IsNullOrEmpty(expiryTicks))
+            {
+                ModelState.AddModelError("", "Không có yêu cầu đổi mật khẩu hợp lệ. Vui lòng thử gửi lại mã.");
+                return View("NhapOtpDoiMatKhau", model);
+            }
+
+            if (!long.TryParse(expiryTicks, out var ticks))
+            {
+                ModelState.AddModelError("", "Dữ liệu không hợp lệ. Vui lòng thử lại.");
+                return View("NhapOtpDoiMatKhau", model);
+            }
+
+            var expiry = new DateTime(ticks, DateTimeKind.Utc);
+
+            if (DateTime.UtcNow > expiry)
+            {
+                ModelState.AddModelError("", "Mã OTP đã hết hạn. Vui lòng gửi lại mã.");
+                return View("NhapOtpDoiMatKhau", model);
+            }
+
+            if (model.Otp != storedOtp)
+            {
+                ModelState.AddModelError("", "Mã OTP không đúng.");
+                return View("NhapOtpDoiMatKhau", model);
+            }
+
+            // Decode stored reset token and perform password reset
+            string resetTokenGoc;
+
+            try
+            {
+                resetTokenGoc = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(storedToken));
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Liên kết đặt lại mật khẩu không hợp lệ.");
+                return View("NhapOtpDoiMatKhau", model);
+            }
+
+            var ketQua = await _userManager.ResetPasswordAsync(nguoiDung, resetTokenGoc, model.MatKhauMoi!);
+
+            if (ketQua.Succeeded)
+            {
+                // Mat khau thay doi: xoa danh sach trinh duyet tin cay de nhan dien lai o lan dang nhap sau.
+                await _userManager.RemoveAuthenticationTokenAsync(
+                    nguoiDung,
+                    "ConvenienceStore.Security",
+                    "TrustedDevicesV1");
+                Response.Cookies.Delete("ConvenienceStore.TrustedDevice");
+
+                await _userManager.RemoveAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetOtp");
+                await _userManager.RemoveAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetToken");
+                await _userManager.RemoveAuthenticationTokenAsync(nguoiDung, "ConvenienceStore", "PasswordResetOtpExpiry");
+
+                TempData["ThanhCong"] = "Đổi mật khẩu thành công.";
+                return RedirectToAction(nameof(DoiMatKhau));
+            }
+
+            foreach (var loi in ketQua.Errors)
+            {
+                ModelState.AddModelError("", loi.Description);
+            }
+
+            return View("NhapOtpDoiMatKhau", model);
         }
 
         [HttpPost]

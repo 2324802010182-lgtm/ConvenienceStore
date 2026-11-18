@@ -1,0 +1,68 @@
+@model ConvenienceStore.Web.ViewModels.DoiMatKhauOtpViewModel
+
+@{
+    ViewData["Title"] = "Nhập OTP đổi mật khẩu";
+}
+
+<div class="account-page">
+    <div class="container">
+        <div class="account-shell">
+            <div>
+                <partial name="_MenuQuanLyTaiKhoan" />
+            </div>
+
+            <div class="section-card">
+                <div class="section-head">
+                    <div>
+                        <h3 class="section-title">Nhập mã OTP và đổi mật khẩu</h3>
+                        <p class="section-subtitle">Vui lòng nhập mã OTP đã được gửi tới email của bạn</p>
+                    </div>
+                </div>
+
+                <div class="section-body">
+                    @if (TempData["ThanhCong"] != null)
+                    {
+                        <div class="alert alert-success rounded-4">@TempData["ThanhCong"]</div>
+                    }
+
+                    <div class="form-shell">
+                        <form asp-action="XacNhanOtpDoiMatKhau" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                            <div class="mb-3">
+                                <label class="form-label form-label-modern">Email</label>
+                                <input asp-for="Email" class="form-control form-control-modern readonly-box" disabled />
+                                <input asp-for="Email" type="hidden" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label form-label-modern">Mã OTP</label>
+                                <input asp-for="Otp" class="form-control form-control-modern" />
+                                <span asp-validation-for="Otp" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label form-label-modern">Mật khẩu mới</label>
+                                <input asp-for="MatKhauMoi" class="form-control form-control-modern" />
+                                <span asp-validation-for="MatKhauMoi" class="text-danger"></span>
+                                <small class="form-text text-muted">Tối thiểu 12 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label form-label-modern">Xác nhận mật khẩu mới</label>
+                                <input asp-for="XacNhanMatKhau" class="form-control form-control-modern" />
+                                <span asp-validation-for="XacNhanMatKhau" class="text-danger"></span>
+                            </div>
+
+                            <button type="submit" class="primary-btn">
+                                Xác nhận và đổi mật khẩu
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

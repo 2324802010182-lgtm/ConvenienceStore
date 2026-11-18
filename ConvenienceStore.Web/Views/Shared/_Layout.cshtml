@@ -55,7 +55,7 @@
 
           
 
-                @if (User.IsInRole(VaiTro.Admin))
+                @if (User.IsInRole(VaiTro.Admin) || User.IsInRole(VaiTro.NhanVien))
                 {
                     <a href="/QuanTri" class="account-btn admin-dashboard-btn" title="Quản trị hệ thống">
                         <i class="fa-solid fa-chart-line"></i>
@@ -168,6 +168,43 @@
     </footer>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/security-deterrents.js" asp-append-version="true"></script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script>
+            (() => {
+                const logoutForm = document.querySelector('form[action*="/TaiKhoan/DangXuat"]');
+                if (!logoutForm) return;
+
+                const idleLimit = 20 * 1000;
+                let idleTimer;
+
+                const logoutForInactivity = () => {
+                    const formData = new FormData(logoutForm);
+                    formData.set('reason', 'timeout');
+                    fetch(logoutForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin',
+                        redirect: 'follow'
+                    }).finally(() => {
+                        window.location.replace('/TaiKhoan/DangNhap?reason=timeout');
+                    });
+                };
+
+                const resetIdleTimer = () => {
+                    clearTimeout(idleTimer);
+                    idleTimer = setTimeout(logoutForInactivity, idleLimit);
+                };
+
+                ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(eventName => {
+                    document.addEventListener(eventName, resetIdleTimer, { passive: true });
+                });
+
+                resetIdleTimer();
+            })();
+        </script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

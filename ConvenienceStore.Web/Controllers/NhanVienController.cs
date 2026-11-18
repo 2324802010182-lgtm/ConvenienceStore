@@ -62,7 +62,22 @@ namespace ConvenienceStore.Web.Controllers
                 return View(model);
             }
 
-            await _userManager.AddToRoleAsync(nhanVien, VaiTro.NhanVien);
+            var ketQuaVaiTro = await _userManager.AddToRoleAsync(nhanVien, VaiTro.NhanVien);
+            if (!ketQuaVaiTro.Succeeded)
+            {
+                foreach (var loi in ketQuaVaiTro.Errors)
+                {
+                    ModelState.AddModelError("", loi.Description);
+                }
+
+                await _userManager.DeleteAsync(nhanVien);
+                return View(model);
+            }
+
+            if (await _userManager.IsInRoleAsync(nhanVien, VaiTro.KhachHang))
+            {
+                await _userManager.RemoveFromRoleAsync(nhanVien, VaiTro.KhachHang);
+            }
 
             var soNhanVien = await _context.Users
                 .CountAsync(x => x.MaNhanVien != null);

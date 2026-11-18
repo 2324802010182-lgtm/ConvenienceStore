@@ -1,10 +1,7 @@
 using ConvenienceStore.Business.Interfaces;
-using ConvenienceStore.Business.Interfaces;
-using ConvenienceStore.Business.Services;
 using ConvenienceStore.Business.Services;
 using ConvenienceStore.DataAccess;
 using ConvenienceStore.DataAccess.UnitOfWork;
-using ConvenienceStore.Models.Entities;
 using ConvenienceStore.Models.Entities;
 using ConvenienceStore.Models.HangSo;
 using ConvenienceStore.Web.DuLieuKhoiTao;
@@ -12,8 +9,12 @@ using ConvenienceStore.Web.Hubs;
 using ConvenienceStore.Web.Services;
 using ConvenienceStore.Web.ViewModels;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using BaoMatBackend.Captcha;
+using BaoMatBackend.Lockout;
+using BaoMatBackend.RateLimiting;
+using BaoMatBackend.AutoLogout;
+using BaoMatBackend.TwoFactor;
 var builder = WebApplication.CreateBuilder(args);
 
 // Ket noi database
@@ -25,11 +26,15 @@ builder.Services.AddIdentity<NguoiDung, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 12;
+    options.Password.RequiredUniqueChars = 4;
 
     options.User.RequireUniqueEmail = true;
+
+    // Feature 3 (demo): khóa tài khoản sau 3 lần nhập sai trong 20 giây.
+    LockoutConfiguration.Configure(options);
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -39,10 +44,21 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/TaiKhoan/DangNhap";
     options.AccessDeniedPath = "/TaiKhoan/TuChoiTruyCap";
+    var autoLogout = builder.Configuration.GetSection(AutoLogoutOptions.SectionName).Get<AutoLogoutOptions>()
+                    ?? new AutoLogoutOptions();
+    AutoLogoutConfiguration.Configure(options, autoLogout.IdleSeconds, autoLogout.SlidingExpiration,
+        requireHttps: !builder.Environment.IsDevelopment());
 });
 
+builder.Services.Configure<EmailOtpOptions>(builder.Configuration.GetSection(EmailOtpOptions.SectionName));
+builder.Services.Configure<AutoLogoutOptions>(builder.Configuration.GetSection(AutoLogoutOptions.SectionName));
+builder.Services.AddScoped<IEmailOtpService, EmailOtpService>();
+builder.Services.AddScoped<IOtpEmailSender, MailKitOtpEmailSender>();
+RateLimitingConfiguration.AddPolicies(builder.Services, builder.Configuration);
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+    options.ValidationInterval = TimeSpan.FromMinutes(2));
+
 // DI
-builder.Services.AddSignalR();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IDonViCongViec, DonViCongViec>();
 builder.Services.AddScoped<IDichVuDanhMuc, DichVuDanhMuc>();
@@ -50,8 +66,9 @@ builder.Services.AddScoped<IDichVuSanPham, DichVuSanPham>();
 builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<RecaptchaOptions>(builder.Configuration.GetSection(RecaptchaOptions.SectionName));
+builder.Services.AddHttpClient<IRecaptchaV2Verifier, RecaptchaV2Verifier>(client => client.Timeout = TimeSpan.FromSeconds(8));
 builder.Services.AddScoped<IDichVuDanhGiaSanPham, DichVuDanhGiaSanPham>();
-builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IDichVuDashboardAdmin, DichVuDashboardAdmin>();
 builder.Services.AddScoped<IDichVuDonHang, DichVuDonHang>();
@@ -60,9 +77,15 @@ builder.Services.AddScoped<IDichVuDiemTichLuy, DichVuDiemTichLuy>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    var idleSeconds = builder.Configuration.GetSection(AutoLogoutOptions.SectionName)
+        .Get<AutoLogoutOptions>()?.IdleSeconds ?? 20;
+    options.IdleTimeout = TimeSpan.FromSeconds(Math.Max(1, idleSeconds));
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
 });
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
@@ -102,10 +125,12 @@ app.MapHub<ConvenienceStore.Web.Hubs.ChatOnlineHub>("/chatOnlineHub");
 app.MapHub<GopYChatHub>("/gopyChatHub");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseSession();
 app.UseRouting();
+app.UseSession();
 
+app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<IdleLogoutMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(
